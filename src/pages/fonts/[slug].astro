@@ -1,0 +1,291 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import FontCard from "../../components/FontCard.astro";
+import { SITE } from "../../data/site";
+import {
+  fonts,
+  fontBySlug,
+  variantsLabel,
+  categoryLabel,
+  contrastLabel,
+  widthLabel,
+  xHeightLabel,
+  similarFonts,
+  pairings,
+  commercialLookalikes,
+  googleFontsCssUrl,
+  specimenUrl,
+} from "../../data/library";
+
+export function getStaticPaths() {
+  return fonts.map((f) => ({
+    params: { slug: f.slug },
+    props: { slug: f.slug },
+  }));
+}
+
+const { slug } = Astro.props;
+const font = fontBySlug(slug);
+
+if (!font) {
+  return Astro.redirect("/fonts");
+}
+
+const same = similarFonts(font.slug, 6);
+const paired = pairings(font, 3);
+const lookalikes = commercialLookalikes(font.slug);
+const cssUrl = googleFontsCssUrl(font);
+const cssText = `@import url('${cssUrl}');\n\n/* ${font.family} */\nbody {\n  font-family: '${font.family}', system-ui, sans-serif;\n  font-weight: ${font.weights.includes(400) ? 400 : font.weights[0] ?? 400};\n}`;
+
+const measures = [
+  { label: "x-height", value: font.measures.xHeight, bar: Math.round(((font.measures.xHeight - 0.4) / 0.6) * 100), text: xHeightLabel(font.measures.xHeight) },
+  { label: "stroke weight", value: font.measures.stemWeight, bar: Math.round(((font.measures.stemWeight - 0.05) / 0.4) * 100), text: Math.round(font.measures.stemWeight * 100) + "% of cap height" },
+  { label: "contrast", value: font.measures.contrast, bar: Math.round((font.measures.contrast / 1.4) * 100), text: contrastLabel(font.measures.contrast) },
+  { label: "letter width", value: font.measures.letterWidth, bar: Math.round((font.measures.letterWidth / 2) * 100), text: widthLabel(font.measures.letterWidth) },
+];
+
+const byDesigner = fonts.filter((f) => font.designers.some((d) => f.designers.includes(d)) && f.slug !== font.slug).slice(0, 6);
+const designers = byDesigner.length ? byDesigner : [];
+
+const isoAdded = new Date(font.added).toISOString();
+const seededDesc =
+  `${font.family} is a ${categoryLabel(font.category).toLowerCase()} typeface designed by ${font.designers.join(" and ") || "the Google Fonts team"}. ` +
+  `Available in ${variantsLabel(font)}, it's open source and free for commercial use. ` +
+  `Compare its measured shape — ${xHeightLabel(font.measures.xHeight).toLowerCase()} x-height, ${widthLabel(font.measures.letterWidth).toLowerCase()} letter width and ${contrastLabel(font.measures.contrast).toLowerCase()} contrast — with similar free fonts, or identify the typeface in your own image with the font finder.`;
+---
+
+<Base
+  title={`${font.family} — Free Google Font (${categoryLabel(font.category)})`}
+  description={seededDesc}
+  path={`/fonts/${font.slug}`}
+  image="/og.png"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      name: `${font.family} font`,
+      description: `${font.family} is a free, open-source ${categoryLabel(font.category).toLowerCase()} Google Font.`,
+      genre: "Typeface",
+      dateCreated: font.added,
+      creator: font.designers.map((d) => ({ "@type": "Person", name: d })),
+      url: `${SITE}/fonts/${font.slug}`,
+      license: "SIL Open Font License",
+      provider: { "@type": "Organization", name: "Google Fonts", url: "https://fonts.google.com" },
+    },
+  ]}
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Free fonts", href: "/fonts" }, { label: font.family }]} />
+
+      <!-- Specimen -->
+      <section class="mt-8 overflow-hidden rounded-2xl border border-hairline bg-soft">
+        <link rel="stylesheet" href={cssUrl} />
+        <div class="p-6 sm:p-10">
+          <p class="eyebrow">Specimen</p>
+          <div class="mt-4" style={`font-family:'${font.family}';`}>
+            <p class="truncate text-5xl leading-none tracking-tight sm:text-7xl">Handgloves</p>
+            <p class="mt-6 text-2xl leading-snug sm:text-3xl">
+              The quick brown fox jumps over the lazy dog
+            </p>
+            <p class="mt-6 text-body-md leading-relaxed text-ink/90">
+              The quick brown fox jumps over the lazy dog. 0123456789 — the quick brown fox jumps over the lazy dog.
+              Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline px-6 py-4 sm:px-10">
+          <p class="text-body-sm text-mute">
+            {variantsLabel(font)} · <span data-role="category">{categoryLabel(font.category)}</span>
+          </p>
+          <a
+            href={specimenUrl(font)}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="rounded-sm border border-hairline-strong px-3 py-1.5 text-body-sm font-medium text-ink transition-colors hover:bg-canvas"
+          >
+            Download at Google Fonts →
+          </a>
+        </div>
+      </section>
+
+      <!-- Measured shape -->
+      <section class="mt-10">
+        <p class="eyebrow">Measured shape</p>
+        <h2 class="mt-2 text-display-md">The proportions of {font.family}</h2>
+        <p class="mt-2 text-body-sm text-body">
+          Measured from the real outline files, normalised to a 1.0 x-height — the numbers we compare when matching your
+          image against the library.
+        </p>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          {measures.map((m) => (
+            <div class="rounded-lg border border-hairline bg-soft p-5">
+              <div class="flex items-baseline justify-between gap-2">
+                <p class="text-body-sm font-medium text-ink">{m.label}</p>
+                <p class="text-caption text-mute">{m.text}</p>
+              </div>
+              <div class="mt-3 h-1.5 rounded-full bg-soft-2">
+                <div class="h-full rounded-full bg-primary" style={`width:${Math.max(4, Math.min(100, m.bar))}%`}></div>
+              </div>
+              <p class="mt-2 font-mono text-caption text-mute">{m.value.toFixed(3)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- CSS embed -->
+      <section class="mt-10">
+        <p class="eyebrow">Web embed</p>
+        <h2 class="mt-2 text-display-md">Use {font.family} on your site</h2>
+        <div class="relative mt-4 overflow-hidden rounded-lg border border-hairline bg-soft">
+          <pre class="overflow-x-auto p-5 font-mono text-code leading-relaxed text-ink" data-css-text>{cssText}</pre>
+          <button
+            type="button"
+            data-copy-css
+            class="absolute right-3 top-3 rounded-sm border border-hairline-strong bg-canvas px-3 py-1.5 text-caption text-ink transition-colors hover:bg-soft-2"
+          >
+            Copy CSS
+          </button>
+        </div>
+      </section>
+
+      <!-- Similar fonts -->
+      <section class="mt-12">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p class="eyebrow">Similar typefaces</p>
+            <h2 class="mt-2 text-display-md">Fonts like {font.family}</h2>
+          </div>
+          <a href="/fonts" class="text-body-sm text-link hover:underline">Browse all →</a>
+        </div>
+        <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+          {same.map((f) => <FontCard font={f} />)}
+        </div>
+      </section>
+
+      {lookalikes.length > 0 && (
+        <section class="mt-12 rounded-2xl border border-hairline bg-soft p-6 sm:p-8">
+          <p class="eyebrow">Free alternatives</p>
+          <h2 class="mt-2 text-display-md">{font.family} is a free alternative to</h2>
+          <p class="mt-2 text-body-sm text-body">
+            {font.family} can stand in for these commercial typefaces at a fraction of the price — licence-free.
+          </p>
+          <div class="mt-5 flex flex-wrap gap-2">
+            {lookalikes.map((c) => (
+              <a
+                href={c.buyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="rounded-full bg-link-soft px-4 py-1.5 text-caption text-link transition-opacity hover:opacity-80"
+                title={`${c.name} by ${c.foundry}`}
+              >
+                {c.name}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Pairings -->
+      {paired.length > 0 && (
+        <section class="mt-12">
+          <p class="eyebrow">Pairing</p>
+          <h2 class="mt-2 text-display-md">What goes with {font.family}</h2>
+          <p class="mt-2 text-body-sm text-body">
+            A curated {font.category === "serif" ? "sans-serif" : "serif"} companion that balances the tone of {font.family}.
+          </p>
+          <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+            {paired.map((f) => <FontCard font={f} />)}
+          </div>
+        </section>
+      )}
+
+      {designers.length > 0 && (
+        <section class="mt-12">
+          <p class="eyebrow">Same designers</p>
+          <h2 class="mt-2 text-display-md">More by {font.designers[0]}</h2>
+          <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+            {designers.map((f) => <FontCard font={f} />)}
+          </div>
+        </section>
+      )}
+
+      <!-- Details -->
+      <section class="mt-12">
+        <p class="eyebrow">Details</p>
+        <dl class="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <div class="border-t border-hairline pt-3">
+            <dt class="text-caption text-mute">Family</dt>
+            <dd class="mt-1 text-body-md font-medium text-ink">{font.family}</dd>
+          </div>
+          <div class="border-t border-hairline pt-3">
+            <dt class="text-caption text-mute">Category</dt>
+            <dd class="mt-1 text-body-md font-medium text-ink">{categoryLabel(font.category)}</dd>
+          </div>
+          <div class="border-t border-hairline pt-3">
+            <dt class="text-caption text-mute">Designers</dt>
+            <dd class="mt-1 text-body-md font-medium text-ink">{font.designers.join(", ") || "Google Fonts team"}</dd>
+          </div>
+          <div class="border-t border-hairline pt-3">
+            <dt class="text-caption text-mute">Added to Google Fonts</dt>
+            <dd class="mt-1 text-body-md font-medium text-ink">{new Date(font.added).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</dd>
+          </div>
+          <div class="border-t border-hairline pt-3">
+            <dt class="text-caption text-mute">Licence</dt>
+            <dd class="mt-1 text-body-md font-medium text-ink">Open source · free for commercial use</dd>
+          </div>
+          <div class="border-t border-hairline pt-3">
+            <dt class="text-caption text-mute">Scripts</dt>
+            <dd class="mt-1 text-body-md font-medium text-ink">{font.scripts.join(", ") || "Latin"}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- SEO text -->
+      <section class="mt-14">
+        <div class="prose-doc">
+          <h2>About the {font.family} font</h2>
+          <p>
+            {font.family} is a {categoryLabel(font.category).toLowerCase()} typeface {font.designers.length ? `designed by ${font.designers.join(" and ")}` : "drawn by the Google Fonts team"}, first released
+            to Google Fonts on {new Date(font.added).toLocaleDateString("en-US", { year: "numeric", month: "long" })}. It ships with {variantsLabel(font)}
+            and is licenced under the SIL Open Font License, which permits commercial use in websites, apps, documents and
+            print without attribution or payment.
+          </p>
+          <p>
+            Its measured character is a {xHeightLabel(font.measures.xHeight).toLowerCase()} x-height at
+            {Math.round(font.measures.xHeight * 100)}% of the cap height, {widthLabel(font.measures.letterWidth).toLowerCase()} letter forms
+            and {contrastLabel(font.measures.contrast).toLowerCase()} stroke contrast. Those three numbers are what the
+            <a href="/#identify" class="text-link"> font finder</a> uses to narrow an image down to the closest matches, so you can
+            compare {font.family} against the rest of the library by shape rather than by name.
+          </p>
+          <p>
+            Want to check whether {font.family} is the face in a screenshot you have? Run it through the
+            <a href="/#identify" class="text-link"> free font identifier</a>, or browse the <a href="/fonts" class="text-link">full library</a> of
+            {fonts.length.toLocaleString()} open-source fonts for something with a similar feel.
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { onPageLoad } from "../../scripts/onload";
+
+  onPageLoad(() => {
+    const btn = document.querySelector("[data-copy-css]") as HTMLButtonElement | null;
+    const pre = document.querySelector("[data-css-text]");
+    if (!btn || btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(pre?.textContent ?? "");
+        btn.textContent = "Copied";
+        setTimeout(() => (btn.textContent = "Copy CSS"), 1600);
+      } catch {
+        btn.textContent = "Copy failed";
+      }
+    });
+  });
+</script>

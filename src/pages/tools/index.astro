@@ -1,0 +1,107 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+
+const tools = [
+  {
+    slug: "logo-font-identifier",
+    label: "Logo font identifier",
+    tagline: "Find the typeface used in a logo or wordmark.",
+    icon: "tag",
+  },
+  {
+    slug: "screenshot-font-finder",
+    label: "Screenshot font finder",
+    tagline: "Identify any font visible in a screenshot.",
+    icon: "camera",
+  },
+  {
+    slug: "handwriting-font-finder",
+    label: "Handwriting font finder",
+    tagline: "Match connected script and handwritten lettering.",
+    icon: "pen",
+  },
+  {
+    slug: "web-font-finder",
+    label: "Web font finder",
+    tagline: "Name the typeface a website is using.",
+    icon: "globe",
+  },
+  {
+    slug: "font-matcher",
+    label: "Font matcher",
+    tagline: "Compare letter shapes against 1,935 faces.",
+    icon: "compare",
+  },
+  {
+    slug: "free-font-alternative-finder",
+    label: "Free font alternative finder",
+    tagline: "Swap a paid typeface for a free, legal twin.",
+    icon: "swap",
+  },
+];
+
+const icons: Record<string, string> = {
+  tag: '<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4L12 2Z"/><circle cx="7" cy="7" r="1.5"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2v11Z"/><circle cx="12" cy="13" r="4"/>',
+  pen: '<path d="m12 19 7-7 3 3-7 7-3-3Z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5Z"/><path d="m2 2 7.6 7.6"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/>',
+  compare: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 4v16M8 8l4 3-4 3M16 12h1"/>',
+  swap: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+};
+---
+
+<Base
+  title="Free Font Tools — Identify, Match and Swap Typefaces"
+  description="Six free tools to work with type: identify fonts from logos, screenshots, handwriting and websites, match letter shapes to free fonts, and find free alternatives to paid typefaces."
+  path="/tools"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Tools" }]} />
+
+      <section class="mt-8">
+        <p class="eyebrow">Free font tools</p>
+        <h1 class="mt-3 text-display-lg">Every tool you need to work with type</h1>
+        <p class="mt-4 max-w-3xl text-body-lg text-body">
+          Identify the font in any image, match letter shapes against 1,935 free faces, and swap commercial type for a
+          free, legal alternative. Every tool runs in your browser — no uploads, no account, no cost.
+        </p>
+      </section>
+
+      <section class="mt-10 grid gap-5 sm:grid-cols-2">
+        {tools.map((t) => (
+          <a href={`/tools/${t.slug}`} class="group rounded-xl border border-hairline bg-soft p-6 transition-colors hover:border-hairline-strong hover:bg-soft-2">
+            <div class="flex size-10 items-center justify-center rounded-md bg-primary text-on-primary">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icons[t.icon]} />
+            </div>
+            <h2 class="mt-4 text-display-sm">{t.label}</h2>
+            <p class="mt-2 text-body-sm text-body">{t.tagline}</p>
+            <p class="mt-4 text-body-sm font-medium text-link">Open tool →</p>
+          </a>
+        ))}
+      </section>
+
+      <section class="mt-16">
+        <div class="prose-doc max-w-3xl">
+          <h2>About these tools</h2>
+          <p>
+            All six tools are powered by the same in-browser engine that drives the <a href="/#identify" class="text-link">font finder</a>:
+            it isolates letter shapes from an image, compares them against a pre-computed signature index of
+            1,935 open-source Google Fonts, and verifies the top candidates by re-rendering the word. Because the work
+            happens locally, screenshots of unreleased designs never leave your machine.
+          </p>
+          <p>
+            Use the <a href="/tools/logo-font-identifier" class="text-link">logo font identifier</a> for wordmarks and brand
+            lettering, the <a href="/tools/screenshot-font-finder" class="text-link">screenshot font finder</a> for UI and web
+            shots, and the <a href="/tools/handwriting-font-finder" class="text-link">handwriting font finder</a> for connected
+            scripts. When a match turns out to be a licensed commercial face, the
+            <a href="/tools/free-font-alternative-finder" class="text-link">free alternative finder</a> points you to the closest
+            font you can legally ship.
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>

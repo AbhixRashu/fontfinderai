@@ -1,0 +1,39 @@
+---
+import Base from "../../layouts/Base.astro";
+import { COMMERCIAL_FONTS, slugifyName } from "../../data/commercial";
+
+const total = COMMERCIAL_FONTS.length;
+---
+
+<Base
+  title="Free Font Alternatives — Swap Paid Fonts for Free Twins"
+  description={`Find a free, open-source alternative to ${total} commercial typefaces — Helvetica, Gotham, Proxima Nova, Avenir and more.`}
+  path="/font-alternatives"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <section class="mt-8">
+        <p class="eyebrow">Free tool</p>
+        <h1 class="mt-3 text-display-lg">Free font alternatives</h1>
+        <p class="mt-4 max-w-3xl text-body-lg text-body">
+          A directory of {total} commercial typefaces and the free, open-source Google Fonts that stand in for them.
+        </p>
+        <div class="mt-8 grid gap-3 sm:grid-cols-2">
+          {COMMERCIAL_FONTS.map((c) => (
+            <a
+              href={`/font-alternatives/${slugifyName(c.name)}`}
+              class="flex items-center justify-between rounded-lg border border-hairline bg-soft px-5 py-3.5 transition-colors hover:border-hairline-strong hover:bg-soft-2"
+            >
+              <span class="font-medium text-ink">{c.name}</span>
+              <span class="text-caption text-mute">{c.freeAlternatives.length} free twins</span>
+            </a>
+          ))}
+        </div>
+        <p class="mt-8 max-w-3xl text-body-md text-body">
+          Not sure which paid font you are looking at? Use the <a href="/#identify" class="text-link hover:underline">font finder</a> — every
+          match that resembles a paid face lists its free stand-ins automatically.
+        </p>
+      </section>
+    </div>
+  </div>
+</Base>

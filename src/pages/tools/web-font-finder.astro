@@ -1,0 +1,46 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+
+const faq = [
+  {
+    q: "How do I get the font from a website I don't own?",
+    a: "Take a screenshot of the site and run it through this tool, or crop just the heading. For sites you do own, the font-family declaration in your CSS or devtools is the authoritative answer.",
+  },
+  {
+    q: "Can you detect webfonts like Inter, Roboto or Montserrat?",
+    a: "Yes — those are Google Fonts, so they're in the library and will be matched directly. The result card even links to the font page with the CSS you'd need.",
+  },
+  {
+    q: "What about custom or self-hosted web fonts?",
+    a: "Custom brand fonts usually aren't in the free catalogue. You'll get the closest free face, or you can use the free alternative finder to swap a known commercial webfont for a free twin.",
+  },
+];
+---
+
+<ToolLayout
+  title="Web Font Finder — Identify the Font a Website Uses"
+  description="Identify the font a website uses from a screenshot. Crop any heading or body text and match it against 1,935 free web fonts, with copy-paste CSS for every result."
+  path="/tools/web-font-finder"
+  eyebrow="Free tool"
+  heading="Web font finder"
+  intro={[
+    "Loving a site's typography but can't find its name in the source? Screenshot the page, crop the text, and this tool matches it against every free Google Font — the same faces the majority of the web is built on.",
+    "For each match you get the font-family rule and a Google Fonts import snippet, so you can reproduce the look in your own project.",
+  ]}
+  steps={[
+    { title: "Screenshot the site", body: "Capture the section you like — a heading, a hero, a button label." },
+    { title: "Crop the text", body: "Select the line of type you want to identify, ideally 5+ characters." },
+    { title: "Copy the CSS", body: "Every result card includes a ready-to-paste Google Fonts import and font-family rule." },
+  ]}
+  tips={[
+    "Sites with dark themes still work — only the ink shape matters, not the colour scheme.",
+    "Anti-aliased web text at typical sizes matches best; huge display sizes are also fine.",
+    "Identify body text and headings separately if the site pairs two typefaces.",
+  ]}
+  faq={faq}
+  related={[
+    { href: "/tools/screenshot-font-finder", label: "Screenshot font finder" },
+    { href: "/fonts", label: "Browse free fonts" },
+    { href: "/blog/how-to-identify-a-font-in-an-image", label: "Guide: identify a font from an image" },
+  ]}
+/>

@@ -1,0 +1,32 @@
+---
+import type { FontRecord } from "../data/library";
+import { categoryLabel } from "../data/library";
+
+interface Props {
+  font: FontRecord;
+  heading?: boolean;
+}
+
+const { font, heading = false } = Astro.props;
+const hasItalic = font.italic;
+const weights = font.weights.length ? font.weights.join(", ") : "Regular";
+---
+
+<a
+  href={`/fonts/${font.slug}`}
+  data-specimen-font={font.family}
+  data-category={font.category}
+  data-search={font.family}
+  class="font-card group relative flex flex-col gap-2 rounded-lg border border-hairline bg-soft p-4 transition-colors hover:border-hairline-strong hover:bg-soft-2"
+>
+  {heading && <span class="eyebrow">Popular</span>}
+  <div class="flex h-16 items-center overflow-hidden text-2xl leading-none tracking-tight" style={`font-family:'${font.family}';white-space:nowrap;`}>
+    <span>Handgloves</span>
+  </div>
+  <div class="mt-auto">
+    <p class="truncate font-medium text-ink">{font.family}</p>
+    <p class="mt-0.5 text-caption text-mute">
+      {weights}{hasItalic ? " · italic" : ""} · {categoryLabel(font.category)}
+    </p>
+  </div>
+</a>

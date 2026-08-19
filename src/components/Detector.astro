@@ -1,0 +1,1301 @@
+<div id="detector" class="detector-root">
+  <div class="card panel error-box" data-error hidden role="alert">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span data-error-message></span>
+  </div>
+
+  <!-- Stage: idle -->
+  <section data-stage-idle class="detector-stage">
+    <div class="drop-zone" data-upload-drop tabindex="0" role="button" aria-label="Upload an image">
+      <div class="drop-icon-wrap">
+        <svg class="drop-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+      </div>
+      <h3 class="drop-title">Drag &amp; drop an image, or <span class="text-link">browse</span></h3>
+      <p class="drop-sub">PNG, JPG or WebP with crisp lettering works best. We never upload your image.</p>
+      <div class="drop-cta-group">
+        <button type="button" class="btn-primary-pill" data-load-file>Upload an image</button>
+        <button type="button" class="btn-secondary-pill" data-camera aria-label="Take a photo">Take a photo</button>
+        <button type="button" class="btn-secondary-pill" data-try-sample>Try sample image</button>
+      </div>
+      <form class="url-row" data-url-form>
+        <label class="url-field">
+          <span class="sr-only">Image URL</span>
+          <input type="url" data-url-input placeholder="…or paste an image URL" spellcheck="false" />
+        </label>
+        <button type="submit" class="btn-secondary-pill">Load URL</button>
+      </form>
+      <p class="drop-hint">Tip: you can also paste from your clipboard (Ctrl/Cmd + V)</p>
+    </div>
+    <input type="file" accept="image/*" data-file-input class="hidden" />
+    <input type="file" accept="image/*" capture="environment" data-camera-input class="hidden" />
+  </section>
+
+  <!-- Stage: loading -->
+  <section data-stage-loading class="detector-stage hidden">
+    <div class="detector-card progress-panel">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="progress-title" data-loading-label>Preparing your image…</p>
+      <div class="progress-track"><div class="progress-fill" data-loading-bar></div></div>
+      <p class="text-caption text-mute">All processing happens locally in your browser.</p>
+    </div>
+  </section>
+
+  <!-- Stage: crop -->
+  <section data-stage-crop class="detector-stage hidden">
+    <div class="detector-card">
+      <div class="stage-header">
+        <span class="step-badge">Step 2 of 3</span>
+        <h3 class="stage-title">Crop &amp; straighten the text</h3>
+        <p class="stage-desc">Drag a rectangle around the lettering. Tilted or skewed? Rotate the image or drag the corner
+          handles to straighten the baseline before identifying.</p>
+      </div>
+      <div class="crop-toolbar">
+        <div class="crop-tool">
+          <label for="rotate-range" class="crop-tool-label">Rotate <span data-rotate-val>0°</span></label>
+          <input id="rotate-range" type="range" data-rotate min="-45" max="45" value="0" step="1" class="crop-range" />
+        </div>
+        <div class="crop-tool crop-tool-buttons">
+          <button type="button" class="btn-secondary-pill btn-xs" data-rotate-90>⟲ Rotate 90°</button>
+          <button type="button" class="btn-secondary-pill btn-xs" data-crop-reset>Reset</button>
+        </div>
+      </div>
+      <div class="crop-canvas-wrap">
+        <canvas data-crop-canvas class="crop-canvas"></canvas>
+        <p class="crop-hint" data-crop-hint>Drag to select the text</p>
+        <p class="crop-count" data-crop-count></p>
+        <button type="button" class="btn-warp" data-warp-apply hidden>Apply perspective correction</button>
+        <p class="crop-persp-hint" data-warp-hint hidden>Tip: drag the corner handles to align with skewed text</p>
+      </div>
+      <div class="stage-actions">
+        <button type="button" class="btn-primary-pill" data-crop-done>Apply crop &amp; continue</button>
+        <button type="button" class="btn-secondary-pill" data-crop-clear>Skip cropping</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stage: label -->
+  <section data-stage-label class="detector-stage hidden">
+    <div class="detector-card">
+      <!-- Word picker section -->
+      <div class="picker-section" data-word-section>
+        <div class="picker-head">
+          <h4 class="picker-title">Which word?<span class="picker-sub">Pick the one whose font you want.</span></h4>
+        </div>
+        <div class="word-picker" data-word-picker></div>
+      </div>
+
+      <!-- Letter review section -->
+      <div class="letters-section">
+        <div class="picker-head">
+          <h4 class="picker-title">Check the letters<span class="picker-sub" data-label-sub>Fix any that are wrong, and clear the box of anything that is not a letter.</span></h4>
+        </div>
+        <div class="label-grid" data-label-render></div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="stage-actions stage-actions-wide">
+        <button type="button" class="btn-identify" data-label-identify>Identify this font</button>
+        <div class="stage-actions-sub">
+          <button type="button" class="btn-secondary-pill" data-label-crop>Crop manually</button>
+          <button type="button" class="btn-secondary-pill" data-label-reset>New image</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stage: working -->
+  <section data-stage-working class="detector-stage hidden">
+    <div class="detector-card progress-panel">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="progress-title" data-progress-label>Identifying your font…</p>
+      <div class="progress-track"><div class="progress-fill" data-progress-bar></div></div>
+      <p class="text-caption text-mute">Matching letter shapes against our index of free Google Fonts.</p>
+    </div>
+    <div class="skeleton-stack" aria-hidden="true">
+      <div class="skeleton-card">
+        <div class="shimmer skeleton-line skeleton-line-title"></div>
+        <div class="shimmer skeleton-line skeleton-line-sub"></div>
+        <div class="shimmer skeleton-line skeleton-line-specimen"></div>
+        <div class="shimmer skeleton-line skeleton-line-actions"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="shimmer skeleton-line skeleton-line-title"></div>
+        <div class="shimmer skeleton-line skeleton-line-sub"></div>
+        <div class="shimmer skeleton-line skeleton-line-specimen"></div>
+        <div class="shimmer skeleton-line skeleton-line-actions"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="shimmer skeleton-line skeleton-line-title"></div>
+        <div class="shimmer skeleton-line skeleton-line-sub"></div>
+        <div class="shimmer skeleton-line skeleton-line-specimen"></div>
+        <div class="shimmer skeleton-line skeleton-line-actions"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stage: results -->
+  <section data-stage-results class="detector-stage hidden">
+    <!-- How this was matched Accordion -->
+    <details class="how-matched-box">
+      <summary class="how-matched-summary">
+        <span class="summary-arrow">▶</span> How this was matched
+      </summary>
+      <div class="how-matched-content">
+        <div class="match-meta-grid">
+          <div class="match-meta-item">
+            <span class="meta-lbl">Candidate count</span>
+            <span class="meta-val"><strong data-result-count>0</strong> fonts indexed</span>
+          </div>
+          <div class="match-meta-item">
+            <span class="meta-lbl">Method</span>
+            <span class="meta-val" data-method>Letter shape matching + whole-word verification</span>
+          </div>
+          <div class="match-meta-item">
+            <span class="meta-lbl">Characters used</span>
+            <span class="meta-val" data-letters></span>
+          </div>
+          <div class="match-meta-item">
+            <span class="meta-lbl">Stroke thinning</span>
+            <span class="meta-val" data-thinning></span>
+          </div>
+        </div>
+        <p class="match-note">All processing and font rendering verification ran 100% locally in your browser.</p>
+      </div>
+    </details>
+
+    <!-- Top comparison card: Your image preview -->
+    <div class="query-preview-card">
+      <div class="query-preview-label">Your image</div>
+      <div class="query-preview-well" data-result-query-wrap>
+        <img data-result-query-img class="query-img" src="" alt="Cropped image query" />
+      </div>
+    </div>
+
+    <!-- Live preview controls -->
+    <div class="preview-controls-card">
+      <div class="preview-ctrl-item preview-ctrl-text">
+        <label for="preview-text-input" class="ctrl-label">Preview text</label>
+        <input id="preview-text-input" type="text" data-preview-input value="The quick brown fox jumps over the lazy dog" class="preview-input" />
+      </div>
+      <div class="preview-ctrl-item preview-ctrl-size">
+        <div class="ctrl-size-header">
+          <label for="preview-size-input" class="ctrl-label">Size</label>
+          <span class="ctrl-size-val" data-preview-size-val>24px</span>
+        </div>
+        <input id="preview-size-input" type="range" data-preview-size min="12" max="72" value="24" class="preview-range" />
+      </div>
+      <div class="preview-ctrl-item preview-ctrl-spacing">
+        <div class="ctrl-size-header">
+          <label for="preview-spacing-input" class="ctrl-label">Letter spacing</label>
+          <span class="ctrl-size-val" data-preview-spacing-val>0px</span>
+        </div>
+        <input id="preview-spacing-input" type="range" data-preview-spacing min="-4" max="14" value="0" step="0.5" class="preview-range" />
+      </div>
+      <div class="preview-ctrl-item preview-ctrl-weight">
+        <span class="ctrl-label">Weight</span>
+        <div class="weight-toggle" role="group" aria-label="Preview weight">
+          <button type="button" data-weight-btn="400" class="weight-btn active">Regular</button>
+          <button type="button" data-weight-btn="700" class="weight-btn">Bold</button>
+        </div>
+      </div>
+    </div>
+
+    <div data-results-none class="results-none hidden">
+      <p>We couldn't identify this font with high confidence. Try cropping a larger area of text, or uploading a higher-resolution image.</p>
+    </div>
+
+    <!-- Result cards container -->
+    <div data-results class="results-container"></div>
+
+    <div data-results-commercial class="commercial-wrap hidden"></div>
+
+    <div class="results-footer-actions">
+      <button type="button" class="btn-secondary-pill btn-large" data-reset>Identify another font</button>
+    </div>
+  </section>
+</div>
+
+<style is:global>
+  /* --------------------------------------------------------------------------
+     Detector Global Styles (Astro is:global to style dynamic client-side elements)
+     -------------------------------------------------------------------------- */
+  .detector-root {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* Universal Dark Card Container */
+  .detector-card {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .detector-card {
+      padding: 1.25rem;
+      border-radius: 1rem;
+    }
+  }
+
+  /* Error Box */
+  .error-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(220, 38, 38, 0.12);
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    color: #f87171;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  .error-box[hidden] {
+    display: none;
+  }
+  .error-box svg {
+    flex-shrink: 0;
+  }
+
+  /* Buttons */
+  .btn-primary-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    color: #09090b;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .btn-primary-pill:hover {
+    background: #f4f4f5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
+  }
+  .btn-primary-pill:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 9999px;
+    background: #18181c;
+    color: #e4e4e7;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #2e2e36;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .btn-secondary-pill:hover {
+    background: #23232a;
+    border-color: #3f3f4a;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+  .btn-secondary-pill:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary-pill.btn-large {
+    padding: 0.875rem 2rem;
+    font-size: 0.95rem;
+  }
+
+  .btn-identify {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0.875rem 2rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    color: #09090b;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.18);
+  }
+  .btn-identify:hover {
+    background: #f4f4f5;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(255, 255, 255, 0.25);
+  }
+  .btn-identify:active {
+    transform: translateY(0);
+  }
+
+  /* Stage: Idle Drop Zone */
+  .drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    border: 2px dashed #2a2a30;
+    border-radius: 1.25rem;
+    background: #0e0e11;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .drop-zone:hover,
+  .drop-zone.drag-over {
+    border-color: var(--accent-link);
+    background: color-mix(in srgb, var(--accent-link) 4%, transparent);
+  }
+  .drop-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 1.25rem;
+    background: #18181c;
+    border: 1px solid #2a2a32;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a1a1aa;
+    transition: all 0.2s ease;
+  }
+  .drop-zone:hover .drop-icon-wrap {
+    color: var(--accent-link);
+    border-color: color-mix(in srgb, var(--accent-link) 40%, transparent);
+    background: color-mix(in srgb, var(--accent-link) 8%, transparent);
+  }
+  .drop-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #f4f4f5;
+    letter-spacing: -0.02em;
+  }
+  .drop-sub {
+    max-width: 28rem;
+    font-size: 0.9375rem;
+    color: #888891;
+    line-height: 1.5;
+  }
+  .drop-cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .drop-hint {
+    font-size: 0.8125rem;
+    color: #71717a;
+    margin-top: 0.5rem;
+  }
+
+  /* Progress & Loading */
+  .progress-panel {
+    align-items: center;
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+  }
+  .progress-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #f4f4f5;
+  }
+  .spinner {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    border: 3px solid #232328;
+    border-top-color: var(--accent-link);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .progress-track {
+    width: 100%;
+    max-width: 24rem;
+    height: 6px;
+    border-radius: 9999px;
+    background: #1e1e24;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 9999px;
+    background: var(--accent-link);
+    transition: width 0.25s ease;
+  }
+
+  /* Stage: Crop */
+  .stage-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .step-badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--accent-link);
+  }
+  .stage-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+  .stage-desc {
+    font-size: 0.875rem;
+    color: #8e8e93;
+    line-height: 1.45;
+  }
+  .crop-canvas-wrap {
+    position: relative;
+    border: 1px solid #27272e;
+    border-radius: 0.875rem;
+    overflow: hidden;
+    background: #09090b;
+    touch-action: none;
+  }
+  .crop-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 460px;
+    cursor: crosshair;
+  }
+  .crop-hint, .crop-count {
+    position: absolute;
+    padding: 0.3rem 0.85rem;
+    border-radius: 9999px;
+    background: rgba(12, 12, 14, 0.85);
+    backdrop-filter: blur(8px);
+    color: #f4f4f5;
+    font-size: 0.75rem;
+    font-weight: 500;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .crop-hint {
+    top: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .crop-count {
+    bottom: 0.75rem;
+    right: 0.875rem;
+  }
+  .stage-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .stage-actions-wide {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .stage-actions-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Stage: Label (Word & Letter Review) */
+  .picker-section, .letters-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+  .picker-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .picker-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .picker-sub {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #888891;
+  }
+
+  /* Word Picker Grid (Visual Images) */
+  .word-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    padding: 0.875rem;
+    background: #0b0b0d;
+    border: 1px solid #1e1e23;
+    border-radius: 0.875rem;
+    min-height: 56px;
+    align-items: center;
+  }
+  .word-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1.5px solid #292932;
+    background: #141417;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    max-height: 48px;
+  }
+  .word-chip:hover {
+    border-color: #3f3f4e;
+    background: #1b1b20;
+    transform: translateY(-1px);
+  }
+  .word-chip.word-chip-active {
+    border-color: var(--accent-link);
+    background: #0e1e38;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-link) 40%, transparent), 0 0 16px color-mix(in srgb, var(--accent-link) 35%, transparent);
+  }
+  .word-chip-img {
+    display: block;
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px;
+    filter: contrast(1.05);
+  }
+
+  /* Letter Glyph Review Grid */
+  .label-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    padding: 0.875rem;
+    background: #0b0b0d;
+    border: 1px solid #1e1e23;
+    border-radius: 0.875rem;
+    align-items: stretch;
+  }
+  .glyph-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.625rem;
+    background: #151518;
+    border: 1px solid #25252c;
+    width: 60px;
+  }
+  .glyph-img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #09090b;
+  }
+  .glyph-input {
+    width: 44px;
+    height: 36px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: lowercase;
+    border: 1px solid #2d2d38;
+    border-radius: 0.375rem;
+    background: #0c0c0e;
+    color: #ffffff;
+    transition: border-color 0.15s;
+  }
+  .glyph-input:focus {
+    border-color: var(--accent-link);
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-link) 30%, transparent);
+  }
+  .word-input-full {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #2e2e38;
+    border-radius: 0.5rem;
+    background: #0c0c0e;
+    color: #ffffff;
+    font-size: 1rem;
+  }
+  .word-input-full:focus {
+    border-color: var(--accent-link);
+    outline: none;
+  }
+
+  /* --------------------------------------------------------------------------
+     Results Stage Styles
+     -------------------------------------------------------------------------- */
+  /* Accordion: How this was matched */
+  .how-matched-box {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 0.875rem;
+    padding: 0.875rem 1.25rem;
+    color: #888891;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+  }
+  .how-matched-summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: #d4d4d8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+    list-style: none;
+  }
+  .how-matched-summary::-webkit-details-marker {
+    display: none;
+  }
+  .summary-arrow {
+    font-size: 0.65rem;
+    color: #a1a1aa;
+    transition: transform 0.2s ease;
+  }
+  .how-matched-box[open] .summary-arrow {
+    transform: rotate(90deg);
+  }
+  .how-matched-content {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #1e1e24;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .match-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .match-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .meta-lbl {
+    font-size: 0.75rem;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .meta-val {
+    font-size: 0.875rem;
+    color: #e4e4e7;
+    font-weight: 500;
+  }
+  .match-note {
+    font-size: 0.8125rem;
+    color: #71717a;
+  }
+
+  /* Top Comparison Card: Your image */
+  .query-preview-card {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .query-preview-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #71717a;
+  }
+  .query-preview-well {
+    background: #08080a;
+    border: 1px solid #1a1a1e;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .query-img {
+    max-height: 72px;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  /* Live Preview Controls Card */
+  .preview-controls-card {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+  .preview-ctrl-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .preview-ctrl-text {
+    flex: 1;
+    min-width: 260px;
+  }
+  .preview-ctrl-size {
+    width: 160px;
+  }
+  .ctrl-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #888891;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .ctrl-size-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ctrl-size-val {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    font-family: var(--font-mono, monospace);
+  }
+  .preview-input {
+    width: 100%;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid #282830;
+    border-radius: 0.5rem;
+    background: #0a0a0c;
+    color: #f4f4f5;
+    font-size: 0.875rem;
+    transition: border-color 0.15s;
+  }
+  .preview-input:focus {
+    border-color: var(--accent-link);
+    outline: none;
+  }
+  .preview-range {
+    width: 100%;
+    accent-color: var(--accent-link);
+    cursor: pointer;
+  }
+
+  /* Result Cards Container */
+  .results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Single Result Card */
+  .result-card {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 1.125rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .result-card:hover {
+    border-color: #33333c;
+    transform: translateY(-1px);
+  }
+
+  /* Top Result styling */
+  .result-card.result-top-first {
+    border-color: color-mix(in srgb, var(--accent-link) 45%, transparent);
+    background: linear-gradient(180deg, #131419 0%, #101013 100%);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-link) 8%, transparent);
+  }
+
+  /* Card Header */
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .card-title-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+  .badge-best-match {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.625rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    color: #09090b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .badge-rank {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    background: #1e1e24;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-mono, monospace);
+  }
+  .font-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .font-meta-sub {
+    font-size: 0.8125rem;
+    color: #71717a;
+    margin: 0;
+  }
+
+  /* Match Score Pill */
+  .match-score-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .score-val {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: var(--font-mono, monospace);
+  }
+  .score-lbl {
+    font-size: 0.75rem;
+    color: #71717a;
+  }
+
+  /* Specimen Box */
+  .specimen-preview-box {
+    background: #08080a;
+    border: 1px solid #1a1a1e;
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    min-height: 4.75rem;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .result-preview {
+    color: #f4f4f5;
+    line-height: 1.3;
+    white-space: pre;
+    min-width: 100%;
+  }
+
+  /* Card Actions Row */
+  .card-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-pill-subtle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 1rem;
+    border-radius: 9999px;
+    background: #17171a;
+    color: #d4d4d8;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: 1px solid #282830;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .btn-pill-subtle:hover {
+    background: #222228;
+    border-color: #383842;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+  .btn-pill-subtle:active {
+    transform: translateY(0);
+  }
+  .btn-pill-subtle.copied {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+  }
+
+  /* Commercial Alternatives */
+  .commercial-wrap {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .commercial-block {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 1rem;
+    padding: 1.25rem;
+  }
+  .commercial-block h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #71717a;
+    margin: 0;
+  }
+  .commercial-block p {
+    font-size: 0.875rem;
+    color: #d4d4d8;
+    margin-top: 0.25rem;
+  }
+  .commercial-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .commercial-list a {
+    padding: 0.3rem 0.75rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--accent-link) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-link) 25%, transparent);
+    color: #38bdf8;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .commercial-list a:hover {
+    background: color-mix(in srgb, var(--accent-link) 20%, transparent);
+    border-color: var(--accent-link);
+  }
+
+  /* Match-score breakdown: tags + confidence bar */
+  .match-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.25rem;
+  }
+  .match-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--accent-link) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-link) 28%, transparent);
+    color: var(--accent-link);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .match-tag-score {
+    background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+    border-color: color-mix(in srgb, var(--accent-cyan) 32%, transparent);
+    color: var(--accent-cyan);
+  }
+  .score-bar {
+    width: 100%;
+    height: 5px;
+    margin-top: 0.4rem;
+    border-radius: 9999px;
+    background: #1e1e24;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Pairing suggestions */
+  .pairing-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    background: #0b0b0d;
+    border: 1px solid #1e1e23;
+  }
+  .pairing-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pairing-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .pairing-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.9rem;
+    border-radius: 9999px;
+    background: #17171a;
+    border: 1px solid #282830;
+    color: #d4d4d8;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .pairing-chip:hover {
+    background: #222228;
+    border-color: var(--accent-link);
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+  .btn-alt {
+    border-color: color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+    color: var(--accent-cyan);
+  }
+  .btn-alt:hover {
+    background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+    border-color: var(--accent-cyan);
+    color: #ffffff;
+  }
+
+  /* Results Footer */
+  .results-footer-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  /* URL input row */
+  .url-row {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 30rem;
+    margin-top: 0.25rem;
+  }
+  .url-field {
+    flex: 1;
+    display: block;
+  }
+  .url-field input {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border: 1px solid #2a2a32;
+    border-radius: 9999px;
+    background: #0c0c0e;
+    color: #f4f4f5;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .url-field input::placeholder {
+    color: #5f5f6a;
+  }
+  .url-field input:focus {
+    border-color: var(--accent-link);
+  }
+
+  /* Crop toolbar */
+  .crop-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .crop-tool {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .crop-tool-buttons {
+    flex-direction: row;
+    align-items: center;
+  }
+  .crop-tool-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #888891;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .crop-range {
+    width: 12rem;
+    accent-color: var(--accent-link);
+    cursor: pointer;
+  }
+  .btn-xs {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Perspective warp button + hint */
+  .btn-warp {
+    position: absolute;
+    top: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.4rem 1rem;
+    border-radius: 9999px;
+    background: rgba(12, 12, 14, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid color-mix(in srgb, var(--accent-link) 45%, transparent);
+    color: var(--accent-link);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    z-index: 2;
+  }
+  .btn-warp:hover {
+    background: color-mix(in srgb, var(--accent-link) 18%, transparent);
+  }
+  .crop-persp-hint {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.3rem 0.85rem;
+    border-radius: 9999px;
+    background: rgba(12, 12, 14, 0.85);
+    backdrop-filter: blur(8px);
+    color: #f4f4f5;
+    font-size: 0.75rem;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+    z-index: 2;
+  }
+
+  /* Weight toggle */
+  .weight-toggle {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 9999px;
+    background: #0a0a0c;
+    border: 1px solid #282830;
+  }
+  .weight-btn {
+    padding: 0.3rem 0.9rem;
+    border-radius: 9999px;
+    border: none;
+    background: transparent;
+    color: #888891;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .weight-btn.active {
+    background: #ffffff;
+    color: #09090b;
+    font-weight: 600;
+  }
+
+  /* Skeleton stack */
+  .skeleton-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .skeleton-card {
+    background: #111114;
+    border: 1px solid #232328;
+    border-radius: 1.125rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .skeleton-line {
+    border-radius: 9999px;
+    height: 0.875rem;
+  }
+  .skeleton-line-title {
+    width: 42%;
+    height: 1.25rem;
+  }
+  .skeleton-line-sub {
+    width: 24%;
+    height: 0.75rem;
+  }
+  .skeleton-line-specimen {
+    width: 100%;
+    height: 4.5rem;
+    border-radius: 0.75rem;
+  }
+  .skeleton-line-actions {
+    width: 34%;
+    height: 2rem;
+    border-radius: 9999px;
+  }
+</style>
+
+<script>
+  import { initDetector } from "../scripts/detector-ui";
+  const boot = () => {
+    const root = document.getElementById("detector");
+    if (root) initDetector(root);
+  };
+  document.addEventListener("astro:page-load", boot);
+  boot();
+</script>

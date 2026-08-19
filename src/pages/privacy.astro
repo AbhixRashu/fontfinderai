@@ -1,0 +1,78 @@
+---
+import Base from "../layouts/Base.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { SITE, HOST, SITE_NAME } from "../data/site";
+---
+
+<Base
+  title="Privacy Policy"
+  description="The Font Finder AI privacy policy: images are processed entirely in your browser, no accounts, no tracking cookies, minimal data collection."
+  path="/privacy"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-3xl">
+      <Breadcrumbs items={[{ label: "Privacy" }]} />
+
+      <header class="mt-8">
+        <p class="eyebrow">Legal</p>
+        <h1 class="mt-3 text-display-lg">Privacy policy</h1>
+        <p class="mt-3 text-caption text-mute">Last updated: January 2026</p>
+      </header>
+
+      <article class="prose-doc mt-8">
+        <p>
+          {SITE_NAME} (<strong>{HOST}</strong>) is built around a simple promise: images you run through the font finder
+          never leave your device. This policy explains what we do (and don't) collect, in plain language.
+        </p>
+
+        <h2>Images and identification</h2>
+        <p>
+          The font identification runs entirely in your browser. The image you upload or paste is decoded with the browser's
+          canvas APIs and compared against a pre-loaded signature index served with the page. We have no server that
+          receives, stores, or processes your images, and the tool makes no network request containing them.
+        </p>
+
+        <h2>Data we collect</h2>
+        <p>
+          The site is static and server-rendered. We do not require accounts and we do not use advertising or tracking
+          cookies. The only data stored on your device is:
+        </p>
+        <ul>
+          <li>your theme preference (light or dark) in <code>localStorage</code>, set by the theme toggle; and</li>
+          <li>normal browser caching of the static site and the font signature index.</li>
+        </ul>
+
+        <h2>Fonts and external services</h2>
+        <p>
+          Specimen fonts are loaded from Google Fonts when you view the library or results. Loading a web font causes a
+          request to Google's font servers with your IP address, subject to Google's own privacy policy. We do not control
+          or have access to that data. Where we link to third-party foundries or font sellers, their sites are governed by
+          their own policies.
+        </p>
+
+        <h2>Analytics</h2>
+        <p>
+          We may use privacy-respecting, aggregate analytics (such as server log counts of page views) to understand which
+          pages are useful. These do not include image content, per-user identifiers, or cross-site tracking.
+        </p>
+
+        <h2>Children</h2>
+        <p>
+          The service is general-audience and not directed at children under 13, and we do not knowingly collect personal
+          information from children.
+        </p>
+
+        <h2>Changes</h2>
+        <p>
+          If this policy changes, we'll update the date at the top of this page. Material changes will be noted here.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Questions about privacy? <a href="/contact">Contact us</a>.
+        </p>
+      </article>
+    </div>
+  </div>
+</Base>

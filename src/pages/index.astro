@@ -1,0 +1,321 @@
+---
+import Base from "../layouts/Base.astro";
+import Detector from "../components/Detector.astro";
+import FAQList from "../components/FAQList.astro";
+import { SITE, SITE_NAME, LIBRARY_COUNT, CATEGORIES } from "../data/site";
+import { CATEGORY_COUNTS } from "../data/library";
+const steps = [
+  {
+    n: "01",
+    title: "Upload a screenshot",
+    body: "Drop an image or paste from your clipboard. A crisp crop of the lettering gives the best result.",
+  },
+  {
+    n: "02",
+    title: "Review the letters",
+    body: "We isolate each letter shape automatically. Correct any that look off — it only takes a second.",
+  },
+  {
+    n: "03",
+    title: "Get your match",
+    body: "Shape matching runs entirely in your browser against our index of free fonts. Pick a result, copy the CSS, done.",
+  },
+];
+
+const features = [
+  {
+    icon: "lock",
+    title: "Private by design",
+    body: "Images never leave your device. Detection runs locally with the Web APIs — no uploads, no accounts, no tracking.",
+  },
+  {
+    icon: "zap",
+    title: "Instant, in your browser",
+    body: "Letter shapes are compared to a pre-computed signature index, then re-verified by rendering the top candidates on the spot.",
+  },
+  {
+    icon: "layers",
+    title: "1,935 free fonts indexed",
+    body: "Every Google Font is fingerprinted — serif, sans-serif, display, handwriting and monospace, regular and bold weights.",
+  },
+  {
+    icon: "check",
+    title: "Free alternatives to paid type",
+    body: "Spotted a brand font you can't license? We suggest the closest free, open-source face that stands in convincingly.",
+  },
+];
+
+const faqItems = [
+  {
+    q: "Is this font finder really free?",
+    a: "Yes — the identifier, the 1,935-face library and every free-alternative suggestion are completely free, no account or sign-up required.",
+  },
+  {
+    q: "How accurate is it?",
+    a: "Very good on clean, upright text at a reasonable size. Accuracy depends on the sample: crisp renders of 5+ letters usually nail the face; low-resolution or heavily-styled samples are harder.",
+  },
+  {
+    q: "Are my images uploaded?",
+    a: "Never. The image is decoded and processed in your browser with canvas APIs and a pre-loaded signature index. Nothing is sent to a server.",
+  },
+  {
+    q: "What if the font I find is a paid font?",
+    a: "Many brand and print fonts are commercial. For each match we suggest the closest free Google Font alternative so you can use it in your project legally.",
+  },
+  {
+    q: "Do you support handwriting and scripts?",
+    a: "Yes. Connected handwriting and display lettering is matched with a whole-word rendering comparison rather than per-letter shapes.",
+  },
+  {
+    q: "Can I use the fonts commercially?",
+    a: "Every font in the library is an open-source Google Font, licensed for commercial use. Always double-check the individual font's license on its font page.",
+  },
+];
+
+interface ContentSection {
+  h: string;
+  p: string[];
+  list?: string[];
+}
+
+const contentSections: ContentSection[] = [
+  {
+    h: "What is an AI font finder, and why does it exist?",
+    p: [
+      "Type identification used to mean staring at a character set, comparing the shape of the lowercase a and the terminal of the r, and hoping the designer had licensed something you recognised. Font Finder AI removes the guesswork: you hand it a picture, and it compares the letterforms in that picture against a fingerprint index of 1,935 free, open-source typefaces, ranked by how closely the strokes match.",
+      "The tool sits in a practical gap. Design tools like Figma and Canva show you font names when you have the file, but they cannot tell you what typeface a flattened screenshot uses. Online identifont-style questionnaires ask you to judge x-height and serif style from memory — which is exactly the knowledge you are trying to avoid needing. By letting the algorithm look at the pixels, we convert an expert skill into a two-minute task.",
+    ],
+  },
+  {
+    h: "How the font detection works under the hood",
+    p: [
+      "The engine never uploads your image. When you drop a screenshot, the page itself binarises the pixels into ink and background using an Otsu threshold, then runs connected-component analysis to find every letter. Each isolated glyph is normalised into a 16×16 binary grid — a compact, resolution-independent signature of its silhouette.",
+      "That signature is compared against a pre-computed index: the same 16×16 grids for 62 common characters across all 1,935 fonts, in regular and bold weights. The top candidates are then re-verified by actually rendering the word in each font and comparing the whole render against your crop. The result is a ranked list of matches with a confidence percentage, produced locally in milliseconds to seconds.",
+    ],
+  },
+  {
+    h: "How to get the best match: practical tips",
+    p: [
+      "Crop to one line of text and choose a high-contrast, front-facing sample. The engine converts your image to ink and background, isolates each letter, and compares the letterforms against a fingerprint index of 1,935 free, open-source typefaces — so the clearer the letters, the stronger the signal.",
+    ],
+    list: [
+      "Crop to one line of text. A short phrase of five to ten letters gives the engine the most signal; a wall of paragraph text introduces baseline noise.",
+      "Choose a high-contrast, front-facing crop. Dark lettering on a light background with no skew, outline or drop-shadow is ideal. Avoid perspective shots, heavy textures and low-resolution compressions, which blur the stroke edges the matcher relies on.",
+      "Uppercase, lowercase and numerals all help. The detector can weight candidates differently depending on whether letters sit on the baseline or rise above the x-height, so a sample that mixes cases disambiguates far better than all-caps.",
+      "If the first match is close but not exact, use the letter-review step: correct any glyphs the engine read wrongly and run the identification again. The second pass usually lands it.",
+    ],
+  },
+  {
+    h: "Free fonts vs. commercial fonts: knowing the difference",
+    p: [
+      "A surprising number of famous typefaces are commercial. Helvetica, Gotham, Proxima Nova, Futura and Avenir all sit behind paid licenses — and using them in client work or a product without a license can trigger takedown notices or invoice demands from the foundry. Even many lookalike fonts on free font sites are clones that are risky to ship.",
+      "Font Finder AI's library is deliberately the opposite: every one of the 1,935 fonts is an open-source Google Font, freely licensed for commercial use. When the matcher identifies a font that resembles a commercial face, we surface the closest legal alternative — for example, Inter or Roboto in place of Helvetica, Montserrat for Gotham, or EB Garamond for Adobe Garamond. You get the design direction of the original with a licence you can actually rely on.",
+    ],
+  },
+  {
+    h: "Using the results in your design or code",
+    p: [
+      "Each result page includes copy-paste CSS for the font: a Google Fonts @import URL plus a font-family rule. Paste the import at the top of your stylesheet, and the family rule onto the element you are styling. For a plain <span> or a heading, one class is enough; for body text, set it on the containing block.",
+      "Because every match is a variable or static Google Font, the web font is served on a global CDN with automatic compression and caching. Weights load on demand, and with the display=swap parameter text never falls back to a blank while the face downloads. If you are using Tailwind or a design-token system, you can drop the family into your theme config and it will apply everywhere.",
+      "For print or desktop software, each font page links to the official Google Fonts specimen, where you can download the actual TTF or OTF files for Photoshop, Illustrator or a brand guideline.",
+    ],
+  },
+  {
+    h: "Who should use Font Finder AI",
+    p: [
+      "Developers and marketers who receive a design mock they need to match pixel-for-pixel; small business owners who want to recreate a competitor's visual identity without a licensing bill; students identifying type for an analysis essay; and designers who spot a face in the wild — a sign, a poster, an app — and want to know what it is.",
+      "The use cases that keep coming back are the practical ones: matching a logo font for an internal tool, reverse-engineering a landing page the team liked, and translating a favourite print magazine's typography into an on-brand website using free, legally safe alternatives.",
+    ],
+  },
+  {
+    h: "Privacy and performance: why the browser does the work",
+    p: [
+      "Running the identification client-side has two advantages. The first is privacy: screenshots of unreleased designs, internal dashboards or branded marketing materials never leave your computer, which matters when the text in the image is confidential. The second is speed and cost: there are no server queues, no API keys, and no rate limits — the index travels with the page and the match happens instantly.",
+      "The signature index is a compact binary payload of around 2 MB that is served once and decompressed in the browser. After the first visit it comes from the cache, so subsequent identifications are effectively offline. On a mid-range laptop the whole pipeline — binarise, segment, match, re-render — completes in well under a second.",
+    ],
+  },
+  {
+    h: "Start identifying your next font",
+    p: [
+      "The only thing you need is an image with a word or two in it. Drag it into the box above, review the letters if you want extra precision, and read off the match within seconds. Browse the 1,935 free faces in the library if you would rather pick a starting point by category — sans-serif, serif, display, handwriting or monospace — and check the FAQ for the answers to the common questions.",
+      "No sign-up, no watermark, no uploads. Just pixels in, typeface out.",
+    ],
+  },
+];
+
+const categoryHrefs = {
+  "sans-serif": "/fonts?category=sans-serif",
+  serif: "/fonts?category=serif",
+  display: "/fonts?category=display",
+  handwriting: "/fonts?category=handwriting",
+  monospace: "/fonts?category=monospace",
+};
+
+const icons: Record<string, string> = {
+  lock: '<path d="M5 11h14v9H5z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  zap: '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>',
+  layers: '<path d="m12 2 10 6-10 6L2 8l10-6Z"/><path d="m2 14 10 6 10-6"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+---
+
+<Base
+  title="Font Finder AI — Identify Any Font From an Image"
+  description="Identify any font from an image in seconds. Upload or paste a screenshot, review the letters, and get the exact free font plus copy-paste CSS. 1,935 Google Fonts indexed, 100% in your browser."
+  path="/"
+  image="/og.png"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: SITE_NAME,
+      url: SITE,
+      description: "Identify any font from an image in seconds and find free alternatives with copy-paste CSS.",
+      applicationCategory: "DesignApplication",
+      operatingSystem: "Web",
+      browserRequirements: "Requires JavaScript and canvas support",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: [
+        "Font identification from images",
+        "1,935 free Google Fonts indexed",
+        "Free alternatives to commercial typefaces",
+        "Copy-paste CSS for every match",
+        "Fully client-side processing",
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      name: "How to identify a font from an image",
+      totalTime: "PT2M",
+      step: [
+        { "@type": "HowToStep", name: "Upload an image", text: "Drag and drop or paste a screenshot containing the text you want to identify." },
+        { "@type": "HowToStep", name: "Crop the text", text: "Select the line of lettering with the crop rectangle." },
+        { "@type": "HowToStep", name: "Review the letters", text: "Check the automatically detected characters and correct any mistakes." },
+        { "@type": "HowToStep", name: "Get the match", text: "Review the ranked font matches and copy the CSS for your project." },
+      ],
+    },
+  ]}
+>
+  <!-- Hero -->
+  <section class="container-page pt-20 pb-12 sm:pt-28 sm:pb-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow">Free font finder by image</p>
+      <h1 class="mt-4 text-display-xl sm:text-[3.5rem] sm:leading-none">Identify any font from a picture</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-body-lg text-body">
+        Upload or paste a screenshot and Font Finder AI names the typeface in seconds — matching it against
+        <strong class="font-medium text-ink">{LIBRARY_COUNT.toLocaleString()} free fonts</strong> and suggesting free
+        alternatives to paid type. Everything runs in your browser.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="#identify" class="rounded-sm bg-primary px-5 py-3 text-body-md font-medium text-on-primary transition-opacity hover:opacity-90">
+          Identify a font
+        </a>
+        <a href="/fonts" class="rounded-sm border border-hairline-strong px-5 py-3 text-body-md font-medium text-ink transition-colors hover:bg-soft">
+          Browse free fonts
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Identify tool -->
+  <section id="identify" class="container-page py-12">
+    <div class="mx-auto max-w-4xl">
+      <Detector />
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="container-page py-16">
+    <div class="mx-auto max-w-4xl">
+      <p class="eyebrow">How it works</p>
+      <h2 class="mt-3 text-display-lg">Three steps to a match</h2>
+      <div class="mt-10 grid gap-6 sm:grid-cols-3">
+        {steps.map((s) => (
+          <div class="rounded-lg border border-hairline bg-soft p-6">
+            <span class="font-mono text-caption text-mute">{s.n}</span>
+            <h3 class="mt-3 text-display-sm">{s.title}</h3>
+            <p class="mt-2 text-body-sm text-body">{s.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust features -->
+  <section class="container-page py-16">
+    <div class="mx-auto max-w-4xl">
+      <p class="eyebrow">Why Font Finder AI</p>
+      <h2 class="mt-3 text-display-lg">Built to be fast, private and legal</h2>
+      <div class="mt-10 grid gap-6 sm:grid-cols-2">
+        {features.map((f) => (
+          <div class="rounded-lg border border-hairline bg-soft p-6">
+            <div class="flex size-10 items-center justify-center rounded-md bg-primary text-on-primary">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icons[f.icon]} />
+            </div>
+            <h3 class="mt-4 text-display-sm">{f.title}</h3>
+            <p class="mt-2 text-body-sm text-body">{f.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Library CTA -->
+  <section class="container-page py-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow">Free font library</p>
+      <h2 class="mt-3 text-display-lg">{LIBRARY_COUNT.toLocaleString()} fonts, all open source</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-body-lg text-body">
+        Browse the whole open-source catalogue by category — every face free for commercial use, with a live specimen, CSS embed and download.
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-2">
+        {Object.entries(CATEGORIES).map(([key, label]) => (
+          <a
+            href={categoryHrefs[key as keyof typeof categoryHrefs]}
+            class="rounded-full border border-hairline px-4 py-1.5 text-body-sm text-body transition-colors hover:border-hairline-strong hover:text-ink"
+          >
+            {label} <span class="text-mute">{CATEGORY_COUNTS[key as keyof typeof CATEGORY_COUNTS]}</span>
+          </a>
+        ))}
+      </div>
+      <div class="mt-8">
+        <a href="/fonts" class="rounded-sm bg-primary px-6 py-3 text-body-md font-medium text-on-primary transition-opacity hover:opacity-90">
+          Browse all {LIBRARY_COUNT.toLocaleString()} fonts
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO content -->
+  <section class="container-page py-12">
+    <div class="mx-auto max-w-3xl">
+      <article class="prose-doc">
+        <p class="eyebrow">About font finding</p>
+        {contentSections.map((s) => (
+          <>
+            <h2 id={s.h.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}>{s.h}</h2>
+            {s.p.map((para) => <p>{para}</p>)}
+            {s.list && (
+              <ul>
+                {s.list.map((item) => <li>{item}</li>)}
+              </ul>
+            )}
+          </>
+        ))}
+      </article>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="container-page py-16">
+    <div class="mx-auto max-w-4xl">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="mt-3 text-display-lg">Common questions</h2>
+      <FAQList items={faqItems} path="/" />
+      <p class="mt-8 text-body-sm text-body">
+        More answers on the <a href="/faq" class="text-link hover:underline">full FAQ page</a>.
+      </p>
+    </div>
+  </section>
+</Base>

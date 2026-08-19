@@ -1,0 +1,47 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+
+const faq = [
+  {
+    q: "Can you identify a font from a logo?",
+    a: "Yes, as long as the wordmark is legible. Crop tightly to the lettering, and the engine will compare the shapes against 1,935 free fonts. Stylised or heavily customised logos are harder — you may instead get the closest free lookalike.",
+  },
+  {
+    q: "What if the logo font is a paid, custom or foundry font?",
+    a: "The results panel flags the closest free alternatives for many commercial faces, and you can also use the <a href='/tools/free-font-alternative-finder'>free font alternative finder</a> to browse known replacements for popular brand fonts.",
+  },
+  {
+    q: "Why does the engine see the wrong letters?",
+    a: "Distorted, skewed or outlined lettering confuses glyph detection. Use the letter-review step to correct the characters before identifying — a corrected pass is usually exact.",
+  },
+];
+---
+
+<ToolLayout
+  title="Logo Font Identifier — Find the Font Used in a Logo"
+  description="Identify the font used in any logo or wordmark. Upload the logo image, crop the lettering, and get the matching free font or the closest free alternative."
+  path="/tools/logo-font-identifier"
+  eyebrow="Free tool"
+  heading="Logo font identifier"
+  intro={[
+    "Ever seen a wordmark and wondered what typeface it is? Upload a logo or brand image, and this tool compares the letterforms against 1,935 open-source Google Fonts, then ranks the closest matches.",
+    "Because logos are often built on custom or commercial faces, we also surface the best free, licence-safe alternatives so you can echo the brand without the licensing bill.",
+  ]}
+  steps={[
+    { title: "Upload the logo", body: "Drop the logo image or paste it from your clipboard. A clean, front-facing wordmark works best." },
+    { title: "Crop the lettering", body: "Drag a rectangle tightly around the wordmark text. Skip any icons or symbols." },
+    { title: "Review and identify", body: "Correct any letters the engine misread, then let it match against the full library." },
+  ]}
+  tips={[
+    "Crop out the icon or symbol — pure letterforms match far more reliably.",
+    "A large, high-contrast logo render beats a compressed favicon-size copy every time.",
+    "If the logo is recoloured or has a shadow, the shape match still works: only the ink matters.",
+    "When the closest match is a commercial face like Gotham or Helvetica, check the results for the free stand-in.",
+  ]}
+  faq={faq}
+  related={[
+    { href: "/tools/screenshot-font-finder", label: "Screenshot font finder" },
+    { href: "/tools/free-font-alternative-finder", label: "Free font alternatives" },
+    { href: "/fonts", label: "Browse free fonts" },
+  ]}
+/>

@@ -1,0 +1,47 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+
+const faq = [
+  {
+    q: "Does this work on any screenshot?",
+    a: "Screenshots of websites, apps and documents work well when the text is upright and at a readable size. UI screenshots often contain several fonts — crop to the line you're interested in.",
+  },
+  {
+    q: "How is this different from inspecting the page's CSS?",
+    a: "If you have the source, the CSS is definitive. This tool is for flattened screenshots — from social media, PDF exports, design files or the web — where no source is available.",
+  },
+  {
+    q: "Can you identify system fonts like Arial or Calibri?",
+    a: "Those aren't in our open-source library, but the engine will find the closest free equivalent — for example Arimo stands in for Arial, Carlito for Calibri — and link it for you.",
+  },
+];
+---
+
+<ToolLayout
+  title="Screenshot Font Finder — Identify Any Font in a Screenshot"
+  description="Upload a screenshot and identify the fonts it uses. Crop the text, and match it against 1,935 free Google Fonts entirely in your browser."
+  path="/tools/screenshot-font-finder"
+  eyebrow="Free tool"
+  heading="Screenshot font finder"
+  intro={[
+    "See a headline, an app UI or a quote card and want the exact typeface? Drop in the screenshot, crop the line of text, and this tool names the closest fonts from the full free library.",
+    "Everything runs locally — your screenshot never leaves the browser, so confidential design work stays private.",
+  ]}
+  steps={[
+    { title: "Drop the screenshot", body: "Paste from your clipboard or drag the file in. PNG, JPG and WebP all work." },
+    { title: "Crop one line", body: "Select a single line or short phrase of the text you want to identify." },
+    { title: "Get the match", body: "Review the letters and identify — the ranked matches include copy-paste CSS." },
+  ]}
+  tips={[
+    "Screenshots are usually sharp — a crop of 5+ letters gives near-certain results.",
+    "Pick the line with the most distinctive letterforms (lowercase with descenders helps).",
+    "Small-caps or tiny 10px text blurs the stroke edges; zoom in before cropping.",
+    "If the shot mixes two fonts, identify each line separately.",
+  ]}
+  faq={faq}
+  related={[
+    { href: "/tools/logo-font-identifier", label: "Logo font identifier" },
+    { href: "/tools/web-font-finder", label: "Web font finder" },
+    { href: "/fonts", label: "Browse free fonts" },
+  ]}
+/>

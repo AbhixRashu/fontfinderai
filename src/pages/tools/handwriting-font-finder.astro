@@ -1,0 +1,46 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+
+const faq = [
+  {
+    q: "Can you really identify handwriting?",
+    a: "Connected script and handwriting are matched with a whole-word rendering comparison rather than per-letter shapes. Distinctive styles like cursive invitations and brush lettering can often be matched to a handwriting font from the library.",
+  },
+  {
+    q: "The handwriting is mine, not a font — what now?",
+    a: "If the engine can't match it to a library face, it probably isn't a font. You can turn it into one later; for now the closest handwritten fonts give you the same feel.",
+  },
+  {
+    q: "Why does the letter-review step say 'whole word'?",
+    a: "Joined script has no clean letter boundaries, so we compare the entire word render instead. Just type the word you see and let the engine do the rest.",
+  },
+];
+---
+
+<ToolLayout
+  title="Handwriting Font Finder — Identify Handwritten and Script Fonts"
+  description="Identify handwritten and script fonts from an image. Upload a sample, and the tool compares the whole word against cursive and handwriting fonts in the free library."
+  path="/tools/handwriting-font-finder"
+  eyebrow="Free tool"
+  heading="Handwriting font finder"
+  intro={[
+    "Wedding invitations, café menus and greeting cards are full of handwritten type. Upload a sample and this tool matches the whole word against the script and handwriting fonts in our free library.",
+    "Connected lettering is handled differently to print: instead of splitting letters, the engine compares the entire word render at several scales.",
+  ]}
+  steps={[
+    { title: "Upload the sample", body: "A clear, well-lit photo or scan of the handwriting, with the words filling the frame." },
+    { title: "Crop the phrase", body: "Select the words you want to match — a short phrase is ideal for script." },
+    { title: "Match the style", body: "The engine renders the phrase in candidate script fonts and ranks how close each one is." },
+  ]}
+  tips={[
+    "Front-facing, flat samples beat angled phone shots — perspective distorts the stroke flow.",
+    "The bigger the crop, the more confident the whole-word match.",
+    "Brush lettering and calligraphy fonts are matched the same way; just keep the crop tight.",
+  ]}
+  faq={faq}
+  related={[
+    { href: "/tools/logo-font-identifier", label: "Logo font identifier" },
+    { href: "/tools/screenshot-font-finder", label: "Screenshot font finder" },
+    { href: "/fonts?category=handwriting", label: "Handwriting fonts" },
+  ]}
+/>

@@ -1,0 +1,158 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import FontCard from "../../components/FontCard.astro";
+import { SITE } from "../../data/site";
+import { BRAND_FONTS } from "../../data/brands";
+import { fontBySlug } from "../../data/library";
+
+export function getStaticPaths() {
+  return BRAND_FONTS.map((b) => ({
+    params: { brand: b.slug },
+    props: { brand: b.slug },
+  }));
+}
+
+const { brand: brandSlug } = Astro.props;
+const brand = BRAND_FONTS.find((b) => b.slug === brandSlug);
+
+if (!brand) {
+  return Astro.redirect("/tools/logo-font-identifier");
+}
+
+const free = brand.freeAlternatives
+  .map((s) => fontBySlug(s))
+  .filter((f): f is NonNullable<typeof f> => !!f);
+
+const related = BRAND_FONTS.filter((b) => b !== brand)
+  .slice(0, 5)
+  .map((b) => ({ brand: b.brand, url: `/identify/${b.slug}-font` }));
+
+const title = `What font does ${brand.brand} use? (${brand.commercial})`;
+const description = `${brand.brand} uses ${brand.commercial}, a ${brand.category} typeface by ${brand.foundry}. ${free.length > 0 ? `These free, open-source fonts are the closest ${brand.commercial} alternatives: ` + free.map((f) => f.family).join(", ") + "." : ""}`;
+const url = `${SITE}/identify/${brand.slug}-font`;
+---
+
+<Base
+  title={title}
+  description={description}
+  path={`/identify/${brand.slug}-font`}
+  image="/og.png"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: `What font does ${brand.brand} use?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `${brand.brand} uses ${brand.commercial}, a ${brand.category} typeface by ${brand.foundry}. ${brand.description}`,
+          },
+        },
+        {
+          "@type": "Question",
+          name: `What is a free alternative to the ${brand.brand} font?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: free.length
+              ? `Free open-source alternatives to ${brand.commercial} include ${free.map((f) => f.family).join(", ")}.`
+              : `Use the font finder to match ${brand.commercial} against the free Google Fonts library.`,
+          },
+        },
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Font Finder AI", item: SITE },
+        { "@type": "ListItem", position: 2, name: "Brand fonts", item: `${SITE}/tools/logo-font-identifier` },
+        { "@type": "ListItem", position: 3, name: brand.brand },
+      ],
+    },
+  ]}
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Tools", href: "/tools" }, { label: "Logo font identifier", href: "/tools/logo-font-identifier" }, { label: `${brand.brand} font` }]} />
+
+      <section class="mt-8">
+        <p class="eyebrow">Brand font guide</p>
+        <h1 class="mt-3 text-display-lg">What font does {brand.brand} use?</h1>
+        <p class="mt-4 max-w-3xl text-body-lg text-body">
+          {brand.brand} sets its logo and interface in <strong class="font-semibold text-ink">{brand.commercial}</strong>,
+          a {brand.category} typeface by {brand.foundry}. {brand.description}
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a href="/#identify" class="btn-primary">Identify a font from an image</a>
+          <a href="/tools/logo-font-identifier" class="btn-secondary">Logo font identifier</a>
+        </div>
+      </section>
+
+      {free.length > 0 && (
+        <section class="mt-10">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p class="eyebrow">Free stand-ins</p>
+              <h2 class="mt-2 text-display-md">Free {brand.commercial} alternatives</h2>
+            </div>
+            <a href="/tools/free-font-alternative-finder" class="text-body-sm text-link hover:underline">More alternatives →</a>
+          </div>
+          <p class="mt-2 max-w-3xl text-body-sm text-body">
+            {brand.commercial} is a commercial typeface. These open-source Google Fonts capture its character and are free
+            for personal and commercial use.
+          </p>
+          <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+            {free.map((f) => <FontCard font={f} />)}
+          </div>
+        </section>
+      )}
+
+      <section class="mt-14">
+        <div class="prose-doc max-w-3xl">
+          <h2>How we know it is {brand.commercial}</h2>
+          <p>
+            The identification comes from measuring real letterforms — relative x-height, stem weight, stroke contrast and
+            letter width — the same four metrics the <a href="/#identify" class="text-link">font finder</a> uses on any
+            screenshot you upload. {brand.commercial} has a signature silhouette, and the free fonts listed above were
+            matched against it on those same numbers.
+          </p>
+          <h2>Recreate the {brand.brand} look for free</h2>
+          <p>
+            You can set your own site in any of the free alternatives above and get remarkably close to the {brand.brand}
+            feel — same weight, similar x-height and spacing — without paying for a commercial licence. Each card links to a
+            detail page with the ready-to-paste CSS embed.
+          </p>
+        </div>
+      </section>
+
+      {related.length > 0 && (
+        <section class="mt-12">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p class="eyebrow">More brands</p>
+              <h2 class="mt-2 text-display-md">Fonts used by other brands</h2>
+            </div>
+            <a href="/tools/logo-font-identifier" class="text-body-sm text-link hover:underline">All brand fonts →</a>
+          </div>
+          <div class="mt-6 flex flex-wrap gap-2">
+            {related.map((b) => (
+              <a href={b.url} class="rounded-full bg-link-soft px-4 py-1.5 text-body-sm text-link transition-opacity hover:opacity-80">
+                {b.brand}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { initSpecimenFonts } from "../../scripts/specimen-fonts";
+  import { onPageLoad } from "../../scripts/onload";
+
+  onPageLoad(() => initSpecimenFonts(document));
+</script>

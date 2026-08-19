@@ -1,0 +1,100 @@
+---
+import BlogPostLayout from "../../layouts/BlogPostLayout.astro";
+---
+
+<BlogPostLayout
+  title="How to identify a font from an image (free, in your browser)"
+  description="A practical walkthrough of identifying a font from a picture — what makes a good sample, what the letter-matching process looks like, and how to turn the result into CSS."
+  path="/blog/how-to-identify-a-font-in-an-image"
+  date="2026-01-12"
+  dateLabel="January 12, 2026"
+  readingTime="7 min"
+  related={[
+    { href: "/blog/how-to-identify-a-font-from-a-screenshot", label: "How to identify a font from a screenshot" },
+    { href: "/blog/free-alternatives-to-10-famous-commercial-fonts", label: "Free alternatives to 10 famous commercial fonts" },
+  ]}
+>
+  <p>
+    Someone shares a poster. A design mock lands in your inbox. You're rebuilding a competitor's landing page and you
+    want the same feel. The font is the single biggest stylistic clue in all three cases — and it's usually the one thing
+    nobody tells you. Here's how to identify a font from an image, free, without uploading anything.
+  </p>
+
+  <h2>What you need before you start</h2>
+  <p>
+    The font finder works from pixels, not metadata. A screenshot, a photo of a sign, a flattened PDF export — any image
+    where the lettering is visible — is enough. There is no minimum size, but there is a practical rule of thumb: the more
+    letters you can crop, the more confident the match. Five characters is good; a full word is better; a short phrase is
+    best. Single letters and three-letter words work, but they return a wider list of candidates.
+  </p>
+
+  <h2>The four-step workflow</h2>
+  <h3>1. Upload or paste</h3>
+  <p>
+    Drag the image into the tool, or paste it straight from your clipboard with Ctrl/Cmd + V. PNG, JPG and WebP all work,
+    and files up to a generous 12 MB are accepted. The image is decoded locally with the browser's canvas APIs — nothing
+    is uploaded to a server, so screenshots of unreleased work stay private.
+  </p>
+  <h3>2. Crop the text</h3>
+  <p>
+    Drag a rectangle around one line of lettering. A single line beats a paragraph: it isolates the typeface you're
+    interested in and keeps the baseline estimation clean. If the image has icons or symbols, crop them out — the engine
+    is looking for letterforms, and stray marks add noise.
+  </p>
+  <h3>3. Review the letters</h3>
+  <p>
+    The engine segments the crop into individual glyphs and estimates the baseline and x-height. In the review step you
+    can correct any character it misread — this step is where most first-pass errors get fixed. For connected handwriting,
+    the tool skips letter-by-letter review and matches the whole word instead.
+  </p>
+  <h3>4. Read the results</h3>
+  <p>
+    Each result shows the family name, category, weight, a confidence percentage and a live preview in the typeface.
+    The top candidate is usually the answer; the list below it shows the close runners-up, which matter when the crop was
+    small or the lettering stylised. Copy the CSS snippet and drop it into your stylesheet.
+  </p>
+
+  <h2>How the matching actually works</h2>
+  <p>
+    Under the hood there are two passes. First, each isolated letter is normalised into a 16×16 binary grid — a compact
+    silhouette that ignores size and resolution. That grid is compared to the same grids pre-computed for 62 characters
+    across all 1,935 free fonts, in regular and bold weights, using a Hamming distance over the 256 cells. This ranks the
+    whole library in milliseconds.
+  </p>
+  <p>
+    Second, the top candidates are verified by re-rendering the word you cropped in each font and comparing the whole
+    render against your sample. This second pass catches subtle differences in spacing, terminals and joins that a
+    per-letter comparison can miss, and it's what makes the re-ranked top result trustworthy.
+  </p>
+
+  <h2>Tips that make results land first time</h2>
+  <ul>
+    <li><strong>Prefer front-facing, flat samples.</strong> Perspective shots stretch letters unpredictably. A scan or a straight-on photo wins every time.</li>
+    <li><strong>Mix cases.</strong> A sample with ascenders (b, d, h) and descenders (g, p, y) tells the engine far more than all-caps text.</li>
+    <li><strong>Avoid heavy effects.</strong> Outlines, drop shadows and embossing blur the stroke edges the matcher reads. A plain dark-on-light render is ideal.</li>
+    <li><strong>Check the runner-ups.</strong> When the top match is a commercial face, the results panel lists free alternatives — use those unless you hold the licence.</li>
+  </ul>
+
+  <h2>From match to working CSS</h2>
+  <p>
+    Every result card includes an <code>@import</code> URL and a <code>font-family</code> rule. Add the import to the top
+    of your stylesheet and the rule to the element you're styling:
+  </p>
+  <p>
+    <code>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap');</code>
+  </p>
+  <p>
+    Weights load on demand and <code>display=swap</code> keeps text visible while the face downloads. For desktop tools,
+    each font's page links to the official Google Fonts specimen where you can download the static files for
+    Photoshop or Illustrator.
+  </p>
+
+  <h2>What to do when the font is paid</h2>
+  <p>
+    Many famous faces — Helvetica, Gotham, Proxima Nova, Avenir — are commercial. The finder's results surface the closest
+    free, open-source alternative for a wide set of paid type, so you can ship the design direction legally. Read
+    <a href="/blog/free-alternatives-to-10-famous-commercial-fonts">free alternatives to 10 famous commercial fonts</a>
+    for the shortlist, or browse the full <a href="/fonts">free library</a> when you'd rather start from the design
+    direction than the pixels.
+  </p>
+</BlogPostLayout>

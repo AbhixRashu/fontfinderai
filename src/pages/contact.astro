@@ -1,0 +1,95 @@
+---
+import Base from "../layouts/Base.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { SITE_NAME } from "../data/site";
+---
+
+<Base
+  title="Contact"
+  description="Get in touch with Font Finder AI — questions, feedback, bug reports, or font suggestions."
+  path="/contact"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-3xl">
+      <Breadcrumbs items={[{ label: "Contact" }]} />
+
+      <header class="mt-8">
+        <p class="eyebrow">Contact</p>
+        <h1 class="mt-3 text-display-lg">Get in touch</h1>
+        <p class="mt-4 max-w-2xl text-body-lg text-body">
+          Questions, feedback, bug reports or a font you'd love to see indexed — we read everything.
+        </p>
+      </header>
+
+      <section class="mt-10">
+        <form id="contact-form" action="https://formspree.io/f/your-form-id" method="POST" class="grid gap-5">
+          <div class="grid gap-5 sm:grid-cols-2">
+            <label class="flex flex-col gap-1.5">
+              <span class="text-caption text-mute">Name</span>
+              <input type="text" name="name" required autocomplete="name" class="rounded-sm border border-hairline-strong bg-canvas px-3 py-2.5 text-body-md text-ink placeholder:text-mute focus:border-link focus:outline-none" placeholder="Jane Doe" />
+            </label>
+            <label class="flex flex-col gap-1.5">
+              <span class="text-caption text-mute">Email</span>
+              <input type="email" name="email" required autocomplete="email" class="rounded-sm border border-hairline-strong bg-canvas px-3 py-2.5 text-body-md text-ink placeholder:text-mute focus:border-link focus:outline-none" placeholder="you@example.com" />
+            </label>
+          </div>
+          <label class="flex flex-col gap-1.5">
+            <span class="text-caption text-mute">Subject</span>
+            <input type="text" name="subject" class="rounded-sm border border-hairline-strong bg-canvas px-3 py-2.5 text-body-md text-ink placeholder:text-mute focus:border-link focus:outline-none" placeholder="How can we help?" />
+          </label>
+          <label class="flex flex-col gap-1.5">
+            <span class="text-caption text-mute">Message</span>
+            <textarea name="message" rows="6" required class="rounded-sm border border-hairline-strong bg-canvas px-3 py-2.5 text-body-md text-ink placeholder:text-mute focus:border-link focus:outline-none" placeholder="Tell us more…"></textarea>
+          </label>
+          <button type="submit" class="justify-self-start rounded-sm bg-primary px-6 py-3 text-body-md font-medium text-on-primary transition-opacity hover:opacity-90">
+            Send message
+          </button>
+          <p id="contact-status" class="text-body-sm text-body" role="status" hidden>
+            Thanks — your message has been sent. We'll get back to you soon.
+          </p>
+        </form>
+      </section>
+
+      <section class="mt-14 rounded-2xl border border-hairline bg-soft p-6 sm:p-8">
+        <h2 class="text-display-md">Before you message us</h2>
+        <p class="mt-2 text-body-md text-body">
+          The <a href="/faq" class="text-link hover:underline">FAQ</a> covers accuracy, privacy, formats and licensing.
+          For help identifying a font, the <a href="/#identify" class="text-link hover:underline">font finder</a> is the
+          fastest route.
+        </p>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { onPageLoad } from "../scripts/onload";
+
+  onPageLoad(() => {
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    const status = document.getElementById("contact-status");
+    if (!form || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+        if (res.ok) {
+          form.classList.add("hidden");
+          status!.hidden = false;
+        } else {
+          status!.textContent = "Something went wrong — please try again in a moment.";
+          status!.hidden = false;
+        }
+      } catch {
+        status!.textContent = "Unable to send right now. Please try again later.";
+        status!.hidden = false;
+      }
+    });
+  });
+</script>

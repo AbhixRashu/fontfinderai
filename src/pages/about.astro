@@ -1,0 +1,78 @@
+---
+import Base from "../layouts/Base.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { SITE_NAME } from "../data/site";
+---
+
+<Base
+  title={`About ${SITE_NAME} — Identify Fonts From Images, Free`}
+  description="Learn about Font Finder AI: a free, privacy-first font identifier that matches letter shapes from any image against 1,935 open-source Google Fonts, entirely in your browser."
+  path="/about"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-3xl">
+      <Breadcrumbs items={[{ label: "About" }]} />
+
+      <header class="mt-8">
+        <p class="eyebrow">About</p>
+        <h1 class="mt-3 text-display-lg">The font finder that never uploads your image</h1>
+      </header>
+
+      <article class="prose-doc mt-8">
+        <p>
+          {SITE_NAME} is a free tool that identifies a typeface from a picture. Drop in a screenshot, crop the lettering,
+          and it matches the letterforms against a pre-computed index of all 1,935 open-source Google Fonts — ranking the
+          closest faces, pointing you to free alternatives when the original is a paid font, and handing you copy-paste CSS
+          for the one you pick.
+        </p>
+
+        <h2>Why we built it</h2>
+        <p>
+          Identifying a font used to require either the file itself, a paid subscription, or the patience to answer a
+          twenty-question quiz about whether the <em>a</em> is double-storey. For the most common case — "I have a picture,
+          what is this typeface?" — none of those fit. So we built the thing we wanted: a page where the pixels themselves
+          do the talking, with no uploads, no accounts and no paywall.
+        </p>
+
+        <h2>Privacy as the default</h2>
+        <p>
+          Screenshots are often sensitive — unreleased designs, internal dashboards, branded materials. So the identification
+          engine runs entirely in your browser. The image is decoded with canvas APIs, compared against a signature index
+          that ships with the page, and never leaves your machine. There is no server that sees your image, and nothing to
+          sign up for. Privacy isn't a premium feature; it's the architecture.
+        </p>
+
+        <h2>The free-licence angle</h2>
+        <p>
+          A lot of famous type is commercial, and a lot of well-meaning people copy it anyway because the licence is
+          unaffordable. We'd rather give you a twin you can actually ship. Every font in our library is open source and free
+          for commercial use, and when the matcher finds a shape that resembles a paid face, it suggests the closest legal
+          alternative — matched by measured proportions, not by guesswork.
+        </p>
+
+        <h2>How the matching is built</h2>
+        <p>
+          The signature index is generated from the real Google Fonts files: each outline is rendered, segmented and reduced
+          to a 16×16 binary grid for 62 characters in regular and bold weights, alongside measured x-height, stem weight,
+          contrast and letter width. The matching pipeline binarises your image, isolates letters, and scores every font by
+          Hamming distance over those grids, then verifies the top candidates by re-rendering the word and comparing it to
+          your crop. You can read more in our <a href="/blog">guides</a>.
+        </p>
+
+        <h2>What's in the library</h2>
+        <p>
+          All 1,935 families from the Google Fonts catalogue — sans-serif, serif, display, handwriting and monospace —
+          with the weights and italics each family ships with, plus measured shape data used for the
+          <a href="/fonts">similar-fonts</a> rankings on every font page.
+        </p>
+
+        <h2>Questions or feedback</h2>
+        <p>
+          Found a bug, spotted a font we should index, or want a feature? <a href="/contact">Contact us</a>. For the
+          frequently asked questions, the <a href="/faq">FAQ</a> has the details.
+        </p>
+      </article>
+    </div>
+  </div>
+</Base>

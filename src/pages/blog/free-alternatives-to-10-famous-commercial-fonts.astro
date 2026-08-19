@@ -1,0 +1,70 @@
+---
+import BlogPostLayout from "../../layouts/BlogPostLayout.astro";
+import { COMMERCIAL_FONTS } from "../../data/commercial";
+import { fontBySlug } from "../../data/library";
+
+const names = ["Helvetica", "Gotham", "Proxima Nova", "Futura", "Avenir", "DIN", "Adobe Garamond", "Futura", "Rockwell", "Didot"];
+const featured = COMMERCIAL_FONTS.filter((c) => names.includes(c.name)).slice(0, 10);
+---
+
+<BlogPostLayout
+  title="Free alternatives to 10 famous commercial fonts"
+  description="Helvetica, Gotham, Proxima Nova, Futura and more — the best free, commercially-usable Google Fonts that stand in for the paid classics, ranked by measured shape."
+  path="/blog/free-alternatives-to-10-famous-commercial-fonts"
+  date="2026-03-10"
+  dateLabel="March 10, 2026"
+  readingTime="9 min"
+  related={[
+    { href: "/blog/how-to-identify-a-font-in-an-image", label: "How to identify a font from an image" },
+    { href: "/blog/how-to-identify-a-font-from-a-screenshot", label: "How to identify a font from a screenshot" },
+  ]}
+>
+  <p>
+    Great design doesn't have to carry a licence fee. Some of the most recognisable typefaces in the world are commercial,
+    and their pricing reflects their fame. But for every Helvetica there is an open-source twin that captures the same
+    character — matched not by marketing claims but by the measurements that define a letter: x-height, stem weight,
+    stroke contrast and width. Here are ten of the most-requested swaps, with the free fonts that pull them off.
+  </p>
+
+  {featured.map((c) => (
+    <>
+      <h2>{c.name} → {c.freeAlternatives.map((s) => fontBySlug(s)?.family ?? s).join(", ")}</h2>
+      <p>
+        <strong>{c.name}</strong> by {c.foundry} is a paid typeface. Its closest free stand-ins in the library are
+        {c.freeAlternatives.map((s) => {
+          const f = fontBySlug(s);
+          return f ? <a href={`/fonts/${f.slug}`}> {f.family}</a> : ` ${s}`;
+        })}, ranked by measured letter shapes — a free alternative
+        that comes closest to {c.name}'s silhouette at reading sizes. Each is licensed under the SIL Open Font License,
+        so you can use it commercially without paying or attributing.
+      </p>
+    </>
+  ))}
+
+  <h2>How we choose a "free twin"</h2>
+  <p>
+    We match the commercial face against the entire 1,935-font library using four normalised metrics: relative x-height
+    (how tall lowercase letters are against capitals), stem weight (how heavy the vertical strokes are), stroke contrast
+    (the difference between thick and thin), and average letter width. Fonts that score close on all four share a
+    silhouette; fonts that only share a genre don't. Where several faces tie, we prefer the one already proven in similar
+    pairings — for example, Montserrat for Gotham or Inter for Helvetica.
+  </p>
+
+  <h2>When a free twin isn't the answer</h2>
+  <p>
+    Free twins are excellent for websites, apps, reports, presentations and most marketing. They are not the originals,
+    and for a brand whose wordmark is legally registered in a specific typeface — or for high-end print where the exact
+    letterforms matter — the correct move is to licence the real thing. The alternative finder links to the foundry page
+    for exactly that case. What free twins eliminate is the <em>default</em> decision to either rip off a design or
+    downgrade it because the licence is unaffordable.
+  </p>
+
+  <h2>Find the rest of the list</h2>
+  <p>
+    These ten are the most searched, but the directory covers {COMMERCIAL_FONTS.length} commercial faces — including
+    Circular, Avenir, Graphik, Bodoni, Caslon, Baskerville, Trajan and more. Browse the
+    <a href="/tools/free-font-alternative-finder">free font alternative finder</a> to see them all, and when you spot a
+    font in the wild that might be commercial, run it through the
+    <a href="/#identify">font finder</a> and it will suggest the free stand-in automatically.
+  </p>
+</BlogPostLayout>

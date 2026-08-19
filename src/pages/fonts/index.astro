@@ -1,0 +1,158 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import FontCard from "../../components/FontCard.astro";
+import { LIBRARY_COUNT } from "../../data/site";
+import { fonts, CATEGORY_COUNTS } from "../../data/library";
+
+const crumbs = [{ label: "Free fonts", href: "/fonts" }];
+const cats = [
+  { key: "all", label: "All fonts", count: fonts.length },
+  { key: "sans-serif", label: "Sans-serif", count: CATEGORY_COUNTS["sans-serif"] },
+  { key: "serif", label: "Serif", count: CATEGORY_COUNTS["serif"] },
+  { key: "display", label: "Display", count: CATEGORY_COUNTS["display"] },
+  { key: "handwriting", label: "Handwriting", count: CATEGORY_COUNTS["handwriting"] },
+  { key: "monospace", label: "Monospace", count: CATEGORY_COUNTS["monospace"] },
+];
+---
+
+<Base
+  title="Free Fonts — Browse 1,935 Open-Source Google Fonts"
+  description={`Browse and search all ${LIBRARY_COUNT.toLocaleString()} free, commercially-usable Google Fonts. Filter by category — sans-serif, serif, display, handwriting and monospace — and preview each typeface.`}
+  path="/fonts"
+  image="/og.png"
+>
+  <Breadcrumbs items={crumbs} />
+
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-6xl">
+      <p class="eyebrow">Free font library</p>
+      <h1 class="mt-3 max-w-2xl text-display-lg">Browse {LIBRARY_COUNT.toLocaleString()} free Google Fonts</h1>
+      <p class="mt-3 max-w-2xl text-body-lg text-body">
+        Every font on this page is open source and free for commercial use. Type to search, or filter by category. Need to
+        know what font is in an image instead? <a href="/#identify" class="text-link hover:underline">Identify it here</a>.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <label class="relative flex-1 min-w-64">
+          <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+          </svg>
+          <input
+            id="font-search"
+            type="search"
+            placeholder="Search fonts…"
+            class="w-full rounded-sm border border-hairline-strong bg-canvas py-2.5 pl-9 pr-3 text-body-md text-ink placeholder:text-mute focus:border-link focus:outline-none"
+          />
+        </label>
+        <p id="font-count" class="text-caption text-mute" role="status"></p>
+      </div>
+
+      <div id="category-chips" class="mt-5 flex flex-wrap gap-2">
+        {cats.map((c) => (
+          <button
+            type="button"
+            data-cat={c.key}
+            class="cat-chip rounded-full border px-4 py-1.5 text-body-sm transition-colors"
+          >
+            {c.label} <span class="text-mute">{c.count}</span>
+          </button>
+        ))}
+      </div>
+
+      <div id="font-grid" class="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {fonts.map((f) => <FontCard font={f} />)}
+      </div>
+    </div>
+  </div>
+
+  <div class="container-page py-12">
+    <div class="mx-auto max-w-6xl">
+      <div class="prose-doc max-w-3xl">
+        <h2>About this font library</h2>
+        <p>
+          This is the complete Google Fonts catalogue — {LIBRARY_COUNT.toLocaleString()} typeface families spanning
+          sans-serif, serif, display, handwriting and monospace styles. Every font is open source under the SIL Open Font
+          License or a compatible licence, so you can use them in personal projects, client work, websites and products
+          without paying a licence fee. For each family you'll find the weights and italic variants it ships with, a live
+          preview, a one-line CSS embed, and similar typefaces ranked by measured letter shapes.
+        </p>
+        <p>
+          If you have an image with text in it, <a href="/#identify" class="text-link hover:underline">the font finder</a> will
+          compare the letterforms against this same catalogue and name the match in seconds. If you spot a commercial brand
+          font you can't license, the results also suggest the closest free face from this library as a legal alternative.
+        </p>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { initSpecimenFonts } from "../../scripts/specimen-fonts";
+  import { onPageLoad } from "../../scripts/onload";
+
+  onPageLoad(() => {
+    const grid = document.getElementById("font-grid");
+    const search = document.getElementById("font-search") as HTMLInputElement | null;
+    const count = document.getElementById("font-count");
+    const chips = [...document.querySelectorAll<HTMLButtonElement>("[data-cat]")];
+
+    let activeCat = "all";
+    let query = "";
+
+    const cardData = new Map<HTMLAnchorElement, { family: string; category: string }>();
+    if (grid) {
+      grid.querySelectorAll<HTMLAnchorElement>(".font-card").forEach((card) => {
+        cardData.set(card, {
+          family: card.dataset.search ?? "",
+          category: card.dataset.category ?? "",
+        });
+      });
+    }
+
+    function applyFilter(): void {
+      let visible = 0;
+      cardData.forEach((d, card) => {
+        const catOk = activeCat === "all" || d.category === activeCat;
+        const qOk = !query || d.family.toLowerCase().includes(query);
+        const show = catOk && qOk;
+        card.classList.toggle("hidden", !show);
+        if (show) visible++;
+      });
+      if (count) count.textContent = `${visible.toLocaleString()} of ${cardData.size.toLocaleString()} fonts`;
+      refreshFonts();
+    }
+
+    const refreshFonts = initSpecimenFonts(document);
+
+    search?.addEventListener("input", () => {
+      query = (search.value ?? "").trim().toLowerCase();
+      applyFilter();
+    });
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        activeCat = chip.dataset.cat ?? "all";
+        chips.forEach((c) => {
+          const on = c === chip;
+          c.classList.toggle("bg-primary", on);
+          c.classList.toggle("text-on-primary", on);
+          c.classList.toggle("border-transparent", on);
+          c.classList.toggle("border-hairline", !on);
+          c.classList.toggle("text-ink", !on);
+          c.classList.toggle("hover:border-hairline-strong", !on);
+        });
+        applyFilter();
+      });
+    });
+
+    applyFilter();
+
+    const urlCat = new URLSearchParams(location.search).get("category");
+    if (urlCat && urlCat !== "all") {
+      const chip = chips.find((c) => c.dataset.cat === urlCat);
+      if (chip) chip.click();
+    }
+  });
+</script>

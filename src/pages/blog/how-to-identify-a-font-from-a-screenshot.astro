@@ -1,0 +1,89 @@
+---
+import BlogPostLayout from "../../layouts/BlogPostLayout.astro";
+---
+
+<BlogPostLayout
+  title="How to identify a font from a screenshot"
+  description="Designers and developers see type everywhere in screenshots. Here's how to identify the font in a website, app or social graphic screenshot — including multi-font shots."
+  path="/blog/how-to-identify-a-font-from-a-screenshot"
+  date="2026-02-03"
+  dateLabel="February 3, 2026"
+  readingTime="6 min"
+  related={[
+    { href: "/blog/how-to-identify-a-font-in-an-image", label: "How to identify a font from an image" },
+    { href: "/blog/free-alternatives-to-10-famous-commercial-fonts", label: "Free alternatives to 10 famous commercial fonts" },
+  ]}
+>
+  <p>
+    Screenshots are where most modern font-hunting happens. A colleague posts a dashboard, a Figma mock arrives as a PNG,
+    a landing page catches your eye — and the typeface you want to copy is trapped inside the pixels. Identifying it is
+    usually a two-minute job, but screenshots have a few habits that trip people up. Here's how to get it right.
+  </p>
+
+  <h2>Why screenshots are different from photos</h2>
+  <p>
+    Screenshots are already flat and front-facing, which makes them excellent input for shape matching — no perspective
+    correction needed. Their weakness is the opposite problem: they're often small. An 11px paragraph at 100% zoom has
+    anti-aliased edges that blur the strokes a matcher reads. The fix is scale, not resolution. Zoom the page until the
+    target line is large on screen, then capture — or simply crop tightly and let the engine normalise the size.
+  </p>
+
+  <h2>Isolate the typeface you want</h2>
+  <p>
+    Interfaces almost never use one font. A heading is often a different face from the body copy, which differs again
+    from button labels and input text. Identify each one separately: crop a single line of the headline, run it, then go
+    back and crop a line of body copy. Mixing two fonts in one crop averages their shapes and produces a confusing ranking.
+  </p>
+
+  <h2>Dark mode and colour don't matter</h2>
+  <p>
+    The matcher works from ink shapes, not colour. Dark-theme screenshots with light text are handled automatically — the
+    binarisation step figures out which side is the ink and thresholds accordingly. Backgrounds with gradients or
+    photography are the real obstacle; crop as tight as you can around the text so the estimation of the background colour
+    stays correct.
+  </p>
+
+  <h2>Common screenshot cases, solved</h2>
+  <h3>Website headline</h3>
+  <p>
+    Crop the heading only. Most web headings are set in Google Fonts — Inter, Roboto, Montserrat, Playfair Display — so a
+    match usually lands directly in the free library with the exact CSS you need to replicate it.
+  </p>
+  <h3>App UI</h3>
+  <p>
+    System faces like SF Pro and Segoe UI aren't in the open-source library, but the finder will surface the closest free
+    equivalent (typically Inter) rather than giving up. If you're shipping a web version of the UI, that's the font you'd
+    use anyway.
+  </p>
+  <h3>Social media graphics</h3>
+  <p>
+    Quote cards and infographics often use display or handwritten fonts. Crop the quoted line and — if it's connected
+    script — let the whole-word matcher do its thing. These graphics are usually rendered at high resolution, so matches
+    tend to be confident.
+  </p>
+  <h3>PDF and document exports</h3>
+  <p>
+    Flattened PDFs are effectively screenshots. One extra step: make sure the text layer isn't selected — you want the
+    pixels, not embedded glyph data. A plain export is the cleanest input.
+  </p>
+
+  <h2>What to do when the match is a commercial face</h2>
+  <p>
+    Screenshots of marketing sites frequently use licensed fonts — a brand headline set in Gotham or a poster in
+    Proxima Nova. When that happens, don't recreate it with a clone you found on a free-font site (the licence risk is
+    real). Instead use the free alternative surfaced in the results, or check the
+    <a href="/tools/free-font-alternative-finder">free font alternative finder</a> for a shape-matched, licence-safe twin.
+  </p>
+
+  <h2>The quick recipe</h2>
+  <ol>
+    <li>Zoom to make the text large, then screenshot.</li>
+    <li>Crop one line of a single font.</li>
+    <li>Review the detected letters and correct any mistakes.</li>
+    <li>Read the ranked matches and copy the CSS.</li>
+  </ol>
+  <p>
+    Ready to try it? The <a href="/tools/screenshot-font-finder">screenshot font finder</a> has the workflow built in —
+    or jump straight to the <a href="/#identify">main font finder</a>.
+  </p>
+</BlogPostLayout>

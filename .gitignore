@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+
+# generated data (fonts.json is committed — the build depends on it)
+src/data/generated/measurements.json
+src/data/generated/fonts-metadata.json
+src/data/.cache/
+
+# logs
+npm-debug.log*
+*.log
+
+# os
+.DS_Store
+Thumbs.db
+
+# env
+.env
+.env.local
+
+# generated tailwind css (regenerated via npm run css)
+src/styles/tailwind.generated.css

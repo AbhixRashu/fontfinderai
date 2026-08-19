@@ -1,0 +1,32 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base
+  title="Page Not Found — Font Finder AI"
+  description="The page you were looking for doesn't exist. Head back to the font finder or browse the free font library."
+  path="/404"
+  image="/og.png"
+  includeWebsiteSchema={false}
+>
+  <div class="container-page py-24">
+    <div class="mx-auto max-w-xl text-center">
+      <p class="font-mono text-caption text-mute">404</p>
+      <h1 class="mt-4 text-display-lg">This page got set in a font we can't find</h1>
+      <p class="mt-4 text-body-lg text-body">
+        The link may be broken, or the page may have moved. The good news: everything you need is still one click away.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="/" class="rounded-sm bg-primary px-5 py-3 text-body-md font-medium text-on-primary transition-opacity hover:opacity-90">
+          Go home
+        </a>
+        <a href="/#identify" class="rounded-sm border border-hairline-strong px-5 py-3 text-body-md font-medium text-ink transition-colors hover:bg-soft">
+          Identify a font
+        </a>
+        <a href="/fonts" class="rounded-sm border border-hairline-strong px-5 py-3 text-body-md font-medium text-ink transition-colors hover:bg-soft">
+          Browse free fonts
+        </a>
+      </div>
+    </div>
+  </div>
+</Base>

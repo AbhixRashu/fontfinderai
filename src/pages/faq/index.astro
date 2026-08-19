@@ -1,0 +1,191 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import FAQList from "../../components/FAQList.astro";
+
+const groups = [
+  {
+    label: "About the tool",
+    items: [
+      {
+        q: "What is Font Finder AI?",
+        a: "A free font finder that identifies a typeface from an image. Upload or paste a screenshot, and the tool compares the letterforms against a pre-computed index of 1,935 open-source Google Fonts and ranks the closest matches. It also suggests free alternatives to commercial typefaces and provides copy-paste CSS for every result.",
+      },
+      {
+        q: "Is Font Finder AI really free?",
+        a: "Yes. The identifier, the full font library, the alternative finder and all tools are free with no account, sign-up, watermark or usage limits.",
+      },
+      {
+        q: "Do I need to create an account?",
+        a: "No account is required. Everything works in the browser on a single page load.",
+      },
+      {
+        q: "What browsers are supported?",
+        a: "Current versions of Chrome, Edge, Firefox and Safari. The tool uses canvas APIs and Web DecompressionStream, both available in all modern browsers.",
+      },
+    ],
+  },
+  {
+    label: "How identification works",
+    items: [
+      {
+        q: "How does the font identification work?",
+        a: "The image is binarised into ink and background, connected-component analysis isolates each letter, and every glyph is normalised into a 16×16 binary signature. Those signatures are compared to signatures computed from the real files of all 1,935 fonts, in regular and bold weights. The top candidates are then re-rendered as whole words and compared to your crop for final ranking.",
+      },
+      {
+        q: "How accurate is the identification?",
+        a: "On a clean, front-facing crop of five or more letters, the top match is usually correct and the runner-ups are close. Accuracy depends mostly on the sample: crisp, upright, plain lettering at a readable size. Low resolution, heavy effects, perspective and stylised logo work reduce confidence.",
+      },
+      {
+        q: "Does it work on handwriting?",
+        a: "Yes. Connected script and handwriting are matched with a whole-word rendering comparison rather than per-letter shapes. The tool renders your phrase in candidate script fonts and ranks the closest renders.",
+      },
+      {
+        q: "What does the confidence percentage mean?",
+        a: "It's a normalised ranking of how close each candidate is relative to the field — not an absolute probability. A few high-confidence results mean the letterforms are distinctive; a flat spread means they're generic.",
+      },
+      {
+        q: "Why did the tool read the wrong letters?",
+        a: "Glyph detection can misread stylised, skewed or degraded lettering. Use the letter-review step to correct the characters, then re-run the identification — the corrected pass is usually exact.",
+      },
+      {
+        q: "Can you identify system fonts like Arial, Calibri or Segoe UI?",
+        a: "Those aren't in the open-source library, but the engine finds the closest free equivalent — Arimo for Arial, Carlito for Calibri, and so on — and links you to it. It's the same for SF Pro and other platform faces.",
+      },
+      {
+        q: "Does colour or dark mode affect the result?",
+        a: "No. Only the ink shapes are compared, and the binarisation step handles light-on-dark automatically. Colour, gradients and backgrounds are ignored once the text is isolated.",
+      },
+    ],
+  },
+  {
+    label: "Images and privacy",
+    items: [
+      {
+        q: "Are my images uploaded anywhere?",
+        a: "Never. The image is decoded and processed entirely in your browser with canvas APIs and a pre-loaded signature index. There is no upload endpoint, no server-side processing and no analytics on image content.",
+      },
+      {
+        q: "What image formats and sizes work?",
+        a: "PNG, JPG and WebP, up to 12 MB. Larger files are rejected to keep the in-browser processing fast.",
+      },
+      {
+        q: "Is there a limit on how many fonts I can identify?",
+        a: "No limits. Because processing happens locally, identifying a hundred images is exactly as free as identifying one.",
+      },
+      {
+        q: "Can I paste an image instead of uploading a file?",
+        a: "Yes — press Ctrl/Cmd + V anywhere on the page with an image on your clipboard, or use the 'Try the sample image' button to explore the tool without any file at all.",
+      },
+    ],
+  },
+  {
+    label: "Fonts and licensing",
+    items: [
+      {
+        q: "What fonts are in the library?",
+        a: "All 1,935 families from the Google Fonts open-source catalogue — sans-serif, serif, display, handwriting and monospace, in the weights and italics each family ships with.",
+      },
+      {
+        q: "Can I use these fonts commercially?",
+        a: "Yes. Every font in the library is an open-source Google Font, licensed under the SIL Open Font License or a compatible licence, which permits commercial use in websites, apps, documents and print without payment or attribution. Always check the individual font's licence on its page if you need certainty.",
+      },
+      {
+        q: "What happens if the identified font is a paid font?",
+        a: "Many brand and print faces are commercial. When a match resembles a paid typeface in our directory, the results panel lists the closest free alternatives — legally safe stand-ins matched by measured letter shape.",
+      },
+      {
+        q: "Are the free alternatives really 'the same' as the paid font?",
+        a: "No font is an identical clone of another, and we don't claim these are. They're the closest faces in the open-source library by four measured proportions — x-height, stem weight, contrast and width. At reading sizes they're typically indistinguishable.",
+      },
+      {
+        q: "Can I download the fonts for desktop software?",
+        a: "Each font page links to the official Google Fonts specimen, where you can download the static files for Photoshop, Illustrator, Word or any desktop tool.",
+      },
+      {
+        q: "Do you host or redistribute the font files?",
+        a: "We index them and link to them, but the font files themselves are served by Google Fonts. We don't redistribute typeface files.",
+      },
+    ],
+  },
+  {
+    label: "Using the results",
+    items: [
+      {
+        q: "How do I use the CSS snippet?",
+        a: "Add the @import line to the top of your stylesheet, then apply the font-family rule to the elements you want styled. Fonts load from Google Fonts' global CDN with on-demand weights and display=swap fallback.",
+      },
+      {
+        q: "Can I use these fonts in Tailwind CSS?",
+        a: "Yes. Add the family to your theme (for example font-sans: ['Inter', ...]) and it will apply across all default utilities.",
+      },
+      {
+        q: "Do the results work offline?",
+        a: "The identification itself works after the first visit, since the signature index is cached. Loading the matched Google Fonts for previews requires a connection, as fonts are served by Google.",
+      },
+      {
+        q: "How do I get an even better match?",
+        a: "Crop to a single line of 5+ letters, mix cases, avoid outlines and shadows, and use a front-facing high-contrast sample. Correct any misread letters in the review step and re-run.",
+      },
+    ],
+  },
+  {
+    label: "Technical and data",
+    items: [
+      {
+        q: "Where does the signature index come from?",
+        a: "We computed it ourselves from the Google Fonts source files: each font's outlines were rendered, segmented and converted into 16×16 binary signatures for 62 characters, in regular and bold weights, plus the measured x-height, stem weight, contrast and width used for shape-based similarity.",
+      },
+      {
+        q: "How much data does the tool download?",
+        a: "The signature index is about 2 MB compressed, served once and cached. The page itself is small and static.",
+      },
+      {
+        q: "Do you use cookies or track me?",
+        a: "We don't use advertising or tracking cookies. The only local storage used is your theme preference. See the <a href='/privacy'>privacy policy</a> for details.",
+      },
+      {
+        q: "How often is the font library updated?",
+        a: "The index is rebuilt when Google Fonts publishes new families or weights. New releases appear on the next index refresh.",
+      },
+    ],
+  },
+];
+---
+
+<Base
+  title="FAQ — Answers About Identifying Fonts & Free Alternatives"
+  description="Answers to the most common questions about Font Finder AI: accuracy, privacy, supported formats, font licensing, free alternatives and how the identification works."
+  path="/faq"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-3xl">
+      <Breadcrumbs items={[{ label: "FAQ" }]} />
+
+      <header class="mt-8">
+        <p class="eyebrow">FAQ</p>
+        <h1 class="mt-3 text-display-lg">Frequently asked questions</h1>
+        <p class="mt-4 max-w-2xl text-body-lg text-body">
+          Everything you might want to know about identifying fonts from images, how the matching works, and the free
+          fonts we recommend.
+        </p>
+      </header>
+
+      {groups.map((g) => (
+        <section class="mt-12">
+          <h2 class="text-display-md">{g.label}</h2>
+          <FAQList items={g.items} path="/faq" />
+        </section>
+      ))}
+
+      <section class="mt-14 rounded-2xl border border-hairline bg-soft p-6 sm:p-8">
+        <h2 class="text-display-md">Still have a question?</h2>
+        <p class="mt-2 text-body-md text-body">
+          Something not covered here? <a href="/contact" class="text-link hover:underline">Get in touch</a> and we'll do
+          our best to help.
+        </p>
+      </section>
+    </div>
+  </div>
+</Base>

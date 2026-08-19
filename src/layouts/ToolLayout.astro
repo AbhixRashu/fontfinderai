@@ -1,0 +1,121 @@
+---
+import Base from "./Base.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import Detector from "../components/Detector.astro";
+import FAQList from "../components/FAQList.astro";
+
+interface Step {
+  title: string;
+  body: string;
+}
+interface Faq {
+  q: string;
+  a: string;
+}
+interface Related {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  eyebrow: string;
+  heading: string;
+  intro: string[];
+  steps?: Step[];
+  tips?: string[];
+  faq?: Faq[];
+  related?: Related[];
+}
+
+const {
+  title,
+  description,
+  path,
+  eyebrow,
+  heading,
+  intro,
+  steps = [],
+  tips = [],
+  faq = [],
+  related = [],
+} = Astro.props;
+---
+
+<Base title={title} description={description} path={path} image="/og.png">
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Tools", href: "/tools" }, { label: heading }]} />
+
+      <section class="mt-8">
+        <p class="eyebrow">{eyebrow}</p>
+        <h1 class="mt-3 text-display-lg">{heading}</h1>
+        {intro.map((p) => (
+          <p class="mt-4 max-w-3xl text-body-lg text-body">{p}</p>
+        ))}
+      </section>
+
+      <section class="mt-8">
+        <div class="rounded-2xl border border-hairline bg-soft p-4 shadow-level-3 sm:p-8">
+          <Detector />
+        </div>
+      </section>
+
+      {steps.length > 0 && (
+        <section class="mt-16">
+          <p class="eyebrow">How it works</p>
+          <h2 class="mt-3 text-display-md">What to do</h2>
+          <div class="mt-6 grid gap-6 sm:grid-cols-3">
+            {steps.map((s, i) => (
+              <div class="rounded-lg border border-hairline bg-soft p-6">
+                <span class="font-mono text-caption text-mute">0{i + 1}</span>
+                <h3 class="mt-3 text-display-sm">{s.title}</h3>
+                <p class="mt-2 text-body-sm text-body">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {tips.length > 0 && (
+        <section class="mt-16">
+          <p class="eyebrow">Getting the best result</p>
+          <h2 class="mt-3 text-display-md">Tips for accuracy</h2>
+          <ul class="mt-6 space-y-3">
+            {tips.map((t) => (
+              <li class="flex gap-3 rounded-lg border border-hairline bg-soft p-4 text-body-md text-body">
+                <svg class="mt-0.5 size-5 shrink-0 text-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {faq.length > 0 && (
+        <section class="mt-16">
+          <p class="eyebrow">FAQ</p>
+          <h2 class="mt-3 text-display-md">Common questions</h2>
+          <FAQList items={faq} path={path} />
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section class="mt-16">
+          <p class="eyebrow">Related tools</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {related.map((r) => (
+              <a href={r.href} class="rounded-full border border-hairline px-4 py-1.5 text-body-sm text-body transition-colors hover:border-hairline-strong hover:text-ink">
+                {r.label}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </div>
+</Base>

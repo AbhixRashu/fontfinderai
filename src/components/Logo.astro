@@ -1,0 +1,138 @@
+---
+interface Props {
+  class?: string;
+  text?: boolean;
+  href?: string;
+}
+
+const { class: className = "", text = true, href = "/" } = Astro.props;
+
+const GRADIENT_ID = `logo-grad-${Math.random().toString(36).slice(2, 8)}`;
+const GLOW_ID = `logo-glow-${Math.random().toString(36).slice(2, 8)}`;
+const LENS_ID = `logo-lens-${Math.random().toString(36).slice(2, 8)}`;
+
+const mark = `<svg class="logo-mark size-7 shrink-0 transition-transform duration-300 group-hover:scale-105" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <linearGradient id="${GRADIENT_ID}" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22d3ee" />
+      <stop offset="0.55" stop-color="#6366f1" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="${GLOW_ID}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.4" result="b" />
+      <feMerge>
+        <feMergeNode in="b" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <clipPath id="${LENS_ID}">
+      <circle cx="27" cy="27" r="18.5" />
+    </clipPath>
+  </defs>
+
+  <path d="M12 12 L27 27 M46 13 L27 27 M12 42 L27 27" stroke="url(#${GRADIENT_ID})" stroke-width="1" stroke-dasharray="2.5 3.5" opacity="0.5" class="logo-web" />
+
+  <circle cx="27" cy="27" r="18.5" stroke="url(#${GRADIENT_ID})" stroke-width="4.5" fill="rgba(99,102,241,0.09)" filter="url(#${GLOW_ID})" />
+  <path d="M19.5 21a8.5 8.5 0 0 1 6-3.4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55" />
+
+  <g clip-path="url(#${LENS_ID})">
+    <g stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.5 36 L27 20 L33.5 36" />
+      <path d="M23.4 31.5 H30.6" />
+    </g>
+    <rect x="8.5" y="34.5" width="37" height="1.6" fill="#22d3ee" class="logo-scan" opacity="0" />
+  </g>
+
+  <circle cx="12" cy="12" r="2.6" fill="#22d3ee" class="logo-node" />
+  <circle cx="46" cy="13" r="2.6" fill="#22d3ee" class="logo-node" />
+  <circle cx="12" cy="42" r="2.6" fill="#8b5cf6" class="logo-node" />
+  <circle cx="46" cy="42" r="2.2" fill="#6366f1" class="logo-node" />
+
+  <path d="M40.5 40.5 L54.5 54.5" stroke="url(#${GRADIENT_ID})" stroke-width="6.5" stroke-linecap="round" />
+</svg>`;
+---
+
+{
+  href ? (
+    <a href={href} class={`logo-wordmark group inline-flex items-center gap-2.5 ${className}`} aria-label="Font Finder AI — home">
+      <Fragment set:html={mark} />
+      {text && (
+        <span class="font-display text-base font-bold tracking-tight text-ink">
+          <span class="text-gradient-soft">FontFinder</span> <span class="text-ink/70">AI</span>
+        </span>
+      )}
+    </a>
+  ) : (
+    <span class={`logo-wordmark group inline-flex items-center gap-2.5 ${className}`} aria-hidden="true">
+      <Fragment set:html={mark} />
+      {text && (
+        <span class="font-display text-base font-bold tracking-tight text-ink">
+          <span class="text-gradient-soft">FontFinder</span> <span class="text-ink/70">AI</span>
+        </span>
+      )}
+    </span>
+  )
+}
+
+<style is:global>
+  .logo-wordmark {
+    outline: none;
+  }
+  .logo-mark {
+    filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.28));
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
+  }
+  .logo-wordmark:hover .logo-mark {
+    transform: scale(1.06) rotate(-3deg);
+    filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.55)) drop-shadow(0 0 30px rgba(34, 211, 238, 0.3));
+  }
+  .logo-wordmark:focus-visible .logo-mark {
+    filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.55));
+  }
+  .logo-node {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .logo-wordmark:hover .logo-node {
+    animation: logo-node-pulse 1.6s ease-in-out infinite;
+  }
+  .logo-wordmark:hover .logo-node:nth-of-type(2) {
+    animation-delay: 0.2s;
+  }
+  .logo-wordmark:hover .logo-node:nth-of-type(3) {
+    animation-delay: 0.4s;
+  }
+  .logo-wordmark:hover .logo-node:nth-of-type(4) {
+    animation-delay: 0.6s;
+  }
+  @keyframes logo-node-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .logo-web {
+    transition: opacity 0.3s ease;
+  }
+  .logo-wordmark:hover .logo-web {
+    animation: logo-web-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes logo-web-pulse {
+    0%, 100% { opacity: 0.85; }
+    50% { opacity: 0.4; }
+  }
+  .logo-wordmark:hover .logo-scan {
+    animation: logo-scan-sweep 1.1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes logo-scan-sweep {
+    0% { transform: translateY(-34px); opacity: 0; }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.9; }
+    100% { transform: translateY(34px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .logo-node,
+    .logo-web,
+    .logo-scan {
+      animation: none !important;
+    }
+  }
+</style>

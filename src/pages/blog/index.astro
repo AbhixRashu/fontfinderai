@@ -1,0 +1,74 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+
+const posts = [
+  {
+    slug: "how-to-identify-a-font-in-an-image",
+    title: "How to identify a font from an image (free, in your browser)",
+    description: "A practical walkthrough of identifying a font from a picture — what makes a good sample, what the letter-matching process looks like, and how to turn the result into CSS.",
+    date: "2026-01-12",
+    dateLabel: "January 12, 2026",
+    readingTime: "7 min",
+    excerpt:
+      "Upload, crop, review, identify: the four steps that turn any screenshot into a font match. Plus the tips that make results land first time.",
+  },
+  {
+    slug: "how-to-identify-a-font-from-a-screenshot",
+    title: "How to identify a font from a screenshot",
+    description: "Designers and developers see type everywhere in screenshots. Here's how to identify the font in a website, app or social graphic screenshot — including multi-font shots.",
+    date: "2026-02-03",
+    dateLabel: "February 3, 2026",
+    readingTime: "6 min",
+    excerpt:
+      "Websites, apps and UI mocks rarely use one typeface. Here's how to isolate, crop and identify each font in a screenshot.",
+  },
+  {
+    slug: "free-alternatives-to-10-famous-commercial-fonts",
+    title: "Free alternatives to 10 famous commercial fonts",
+    description: "Helvetica, Gotham, Proxima Nova, Futura and more — the best free, commercially-usable Google Fonts that stand in for the paid classics, ranked by measured shape.",
+    date: "2026-03-10",
+    dateLabel: "March 10, 2026",
+    readingTime: "9 min",
+    excerpt:
+      "Licence costs shouldn't decide your design. The free twins of ten iconic paid faces, matched by letter shape rather than marketing.",
+  },
+];
+---
+
+<Base
+  title="Guides — How to Identify Fonts & Find Free Alternatives"
+  description="Practical guides on identifying fonts from images and screenshots, and finding free, commercially-usable alternatives to famous paid typefaces."
+  path="/blog"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-3xl">
+      <Breadcrumbs items={[{ label: "Guides" }]} />
+
+      <header class="mt-8">
+        <p class="eyebrow">Guides</p>
+        <h1 class="mt-3 text-display-lg">Font identification, explained</h1>
+        <p class="mt-4 max-w-2xl text-body-lg text-body">
+          How to identify type from an image, where the letter-matching algorithm gets its signal, and how to swap
+          commercial fonts for free twins that look the part.
+        </p>
+      </header>
+
+      <section class="mt-10 flex flex-col gap-6">
+        {posts.map((p) => (
+          <a href={`/blog/${p.slug}`} class="group rounded-xl border border-hairline bg-soft p-6 transition-colors hover:border-hairline-strong hover:bg-soft-2">
+            <div class="flex items-center gap-3 text-caption text-mute">
+              <time datetime={p.date}>{p.dateLabel}</time>
+              <span aria-hidden="true">·</span>
+              <span>{p.readingTime} read</span>
+            </div>
+            <h2 class="mt-3 text-display-sm group-hover:text-link">{p.title}</h2>
+            <p class="mt-2 text-body-md text-body">{p.excerpt}</p>
+            <p class="mt-4 text-body-sm font-medium text-link">Read guide →</p>
+          </a>
+        ))}
+      </section>
+    </div>
+  </div>
+</Base>

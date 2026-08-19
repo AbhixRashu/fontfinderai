@@ -1,0 +1,46 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+
+const faq = [
+  {
+    q: "What does 'match' mean here?",
+    a: "The engine extracts each letter shape from your image, computes its 16×16 signature, and compares it to the same signatures computed from the real font files of all 1,935 faces. The top candidates are then re-rendered and compared as whole words.",
+  },
+  {
+    q: "How accurate is the confidence percentage?",
+    a: "It's a normalised ranking of how close each candidate is to the others, not an absolute probability. A spread of high-confidence results means the shape is distinctive; an even spread means the letters are generic.",
+  },
+  {
+    q: "Can I match just one letter?",
+    a: "A single letter gives a wide list of candidates. Five or more letters — especially with descenders or ascenders — narrow the results dramatically.",
+  },
+];
+---
+
+<ToolLayout
+  title="Font Matcher — Compare Letter Shapes Against 1,935 Fonts"
+  description="Match any letter shapes against 1,935 free fonts. Upload an image, crop the text, and see the closest faces ranked by measured shape similarity."
+  path="/tools/font-matcher"
+  eyebrow="Free tool"
+  heading="Font matcher"
+  intro={[
+    "The font matcher exposes the raw comparison engine behind the font finder: give it letter shapes and it ranks every face in the library by how closely the strokes match.",
+    "It's the same algorithm used across the site — binarised glyphs, 16×16 signatures and a re-render verification pass — tuned for users who want to see the candidates, not just the winner.",
+  ]}
+  steps={[
+    { title: "Provide the sample", body: "Drop an image with clean, upright lettering." },
+    { title: "Let it segment", body: "The engine isolates letters, estimates the baseline and x-height, and builds signatures." },
+    { title: "Rank the faces", body: "A ranked list of matches with confidence, weight and copy-paste CSS." },
+  ]}
+  tips={[
+    "Mixed-case samples disambiguate far better than all-caps — ascenders and descenders tell the engine a lot.",
+    "The results list is capped at the top 60 candidates; the #1 is usually the answer.",
+    "Use the preview text field to see your crop's word in each candidate font.",
+  ]}
+  faq={faq}
+  related={[
+    { href: "/#identify", label: "The font finder" },
+    { href: "/fonts", label: "Browse free fonts" },
+    { href: "/tools/free-font-alternative-finder", label: "Free font alternatives" },
+  ]}
+/>

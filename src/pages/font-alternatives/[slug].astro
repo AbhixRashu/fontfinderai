@@ -1,0 +1,173 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import FontCard from "../../components/FontCard.astro";
+import { SITE } from "../../data/site";
+import { COMMERCIAL_FONTS, slugifyName } from "../../data/commercial";
+import { fontBySlug } from "../../data/library";
+
+export function getStaticPaths() {
+  return COMMERCIAL_FONTS.map((c) => ({
+    params: { slug: slugifyName(c.name) },
+    props: { slug: slugifyName(c.name) },
+  }));
+}
+
+const { slug } = Astro.props;
+const commercial = COMMERCIAL_FONTS.find((c) => slugifyName(c.name) === slug);
+
+if (!commercial) {
+  return Astro.redirect("/tools/free-font-alternative-finder");
+}
+
+const free = commercial.freeAlternatives
+  .map((s) => fontBySlug(s))
+  .filter((f): f is NonNullable<typeof f> => !!f);
+
+const idx = COMMERCIAL_FONTS.indexOf(commercial);
+const related = [...COMMERCIAL_FONTS.slice(0, idx), ...COMMERCIAL_FONTS.slice(idx + 1)]
+  .slice(0, 6)
+  .map((c) => ({
+    name: c.name,
+    foundry: c.foundry,
+    url: `/font-alternatives/${slugifyName(c.name)}`,
+  }));
+
+const title = `${commercial.name} Alternative — Free Fonts That Look Like ${commercial.name}`;
+const description =
+  `${commercial.name} is a paid ${commercial.foundry} typeface. These ${free.length} free, open-source Google Fonts are the closest commercial-use substitutes, matched by measured letter shapes.`;
+const alternateNames = free.map((f) => f.family).join(", ");
+const url = `${SITE}/font-alternatives/${slug}`;
+---
+
+<Base
+  title={title}
+  description={description}
+  path={`/font-alternatives/${slug}`}
+  image="/og.png"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Free ${commercial.name} alternatives`,
+      description,
+      url,
+      numberOfItems: free.length,
+      itemListElement: free.map((f, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `${SITE}/fonts/${f.slug}`,
+        name: f.family,
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: `What free font looks most like ${commercial.name}?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `${alternateNames} are the closest free alternatives to ${commercial.name}, matched by measured x-height, stroke weight, contrast and letter width.`,
+          },
+        },
+        {
+          "@type": "Question",
+          name: `Is ${commercial.name} free?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `No — ${commercial.name} is a commercial typeface by ${commercial.foundry}. The open-source alternatives listed on this page are free for personal and commercial use.`,
+          },
+        },
+      ],
+    },
+  ]}
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Tools", href: "/tools" }, { label: "Free font alternatives", href: "/tools/free-font-alternative-finder" }, { label: commercial.name }]} />
+
+      <section class="mt-8">
+        <p class="eyebrow">Free font alternative</p>
+        <h1 class="mt-3 text-display-lg">{commercial.name} font alternative</h1>
+        <p class="mt-4 max-w-3xl text-body-lg text-body">{description}</p>
+        <p class="mt-3 max-w-3xl text-body-md text-body">
+          {commercial.name} is a paid typeface by {commercial.foundry}. The free fonts below capture the same
+          character — same silhouette, weight and spacing — and are fully licenced for commercial use.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a href="/#identify" class="btn-primary">Identify a font from an image</a>
+          <a href={commercial.buyUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary">
+            Buy the original {commercial.name}
+          </a>
+        </div>
+      </section>
+
+      <section class="mt-10">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p class="eyebrow">Closest matches</p>
+            <h2 class="mt-2 text-display-md">Free fonts like {commercial.name}</h2>
+          </div>
+          <a href="/tools/free-font-alternative-finder" class="text-body-sm text-link hover:underline">Browse all 60+ →</a>
+        </div>
+        <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+          {free.map((f) => <FontCard font={f} />)}
+        </div>
+      </section>
+
+      <section class="mt-14">
+        <div class="prose-doc max-w-3xl">
+          <h2>Why these fonts work as {commercial.name} alternatives</h2>
+          <p>
+            Each stand-in was matched against {commercial.name} using the same four measurements the
+            <a href="/#identify" class="text-link"> font finder</a> uses: relative x-height, stem weight, stroke contrast
+            and average letter width. A close score means a close silhouette at reading size, so switching a design from
+            {commercial.name} to {free[0]?.family ?? "a free face"} barely changes the overall look.
+          </p>
+          <h2>Are the alternatives really free?</h2>
+          <p>
+            Yes. Every font on this page is a Google Font released under the SIL Open Font License, which allows use in
+            websites, apps, print, marketing and products with no payment and no attribution required. For brand work where
+            the exact face matters, buy the {commercial.name} licence; everywhere else, the free twin is practically
+            indistinguishable.
+          </p>
+          <h2>Spot a font in a screenshot? Identify it first</h2>
+          <p>
+            Not sure the typeface you are looking at is {commercial.name}? Upload the image to the
+            <a href="/#identify" class="text-link"> font identifier</a> and it will match the letterforms against the free
+            library, surfacing the closest matches (and their commercial lookalikes) in seconds — all processed locally in
+            your browser.
+          </p>
+        </div>
+      </section>
+
+      {related.length > 0 && (
+        <section class="mt-12">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p class="eyebrow">More paid fonts</p>
+              <h2 class="mt-2 text-display-md">Other fonts with free twins</h2>
+            </div>
+            <a href="/tools/free-font-alternative-finder" class="text-body-sm text-link hover:underline">Full directory →</a>
+          </div>
+          <div class="mt-6 flex flex-wrap gap-2">
+            {related.map((c) => (
+              <a href={c.url} class="rounded-full bg-link-soft px-4 py-1.5 text-body-sm text-link transition-opacity hover:opacity-80">
+                {c.name}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { initSpecimenFonts } from "../../scripts/specimen-fonts";
+  import { onPageLoad } from "../../scripts/onload";
+
+  onPageLoad(() => initSpecimenFonts(document));
+</script>

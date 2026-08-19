@@ -1,0 +1,141 @@
+---
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { COMMERCIAL_FONTS } from "../../data/commercial";
+import { fontBySlug } from "../../data/library";
+
+const entries = COMMERCIAL_FONTS.map((c) => ({
+  ...c,
+  free: c.freeAlternatives.map((slug) => fontBySlug(slug)).filter((f) => !!f),
+}));
+---
+
+<Base
+  title="Free Font Alternative Finder — Swap Paid Fonts for Free Twins"
+  description="Find a free, commercially-usable alternative to paid fonts like Helvetica, Gotham, Proxima Nova, Avenir and more. Curated Google Font replacements for 60 commercial typefaces."
+  path="/tools/free-font-alternative-finder"
+  image="/og.png"
+>
+  <div class="container-page py-10">
+    <div class="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Tools", href: "/tools" }, { label: "Free font alternative finder" }]} />
+
+      <section class="mt-8">
+        <p class="eyebrow">Free tool</p>
+        <h1 class="mt-3 text-display-lg">Free font alternative finder</h1>
+        <p class="mt-4 max-w-3xl text-body-lg text-body">
+          Found the perfect typeface — and it's a paid font? This directory swaps {entries.length} commercial faces
+          for free, open-source Google Fonts that capture the same character, licensed for commercial use.
+        </p>
+        <p class="mt-3 max-w-3xl text-body-md text-body">
+          Spot a font in the wild first? Use the <a href="/#identify" class="text-link hover:underline">font finder</a>, and
+          every match that resembles a paid face lists its free stand-ins automatically.
+        </p>
+      </section>
+
+      <div class="mt-10 flex flex-wrap items-center gap-3">
+        <label class="relative flex-1 min-w-64">
+          <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+          </svg>
+          <input
+            id="alt-search"
+            type="search"
+            placeholder="Search paid fonts, e.g. Gotham…"
+            class="w-full rounded-sm border border-hairline-strong bg-canvas py-2.5 pl-9 pr-3 text-body-md text-ink placeholder:text-mute focus:border-link focus:outline-none"
+          />
+        </label>
+        <p id="alt-count" class="text-caption text-mute" role="status"></p>
+      </div>
+
+      <section id="alt-grid" class="mt-8 grid gap-5 sm:grid-cols-2">
+        {entries.map((e) => (
+          <div data-alt-card data-name={e.name.toLowerCase()} class="rounded-xl border border-hairline bg-soft p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h2 class="text-display-sm">{e.name}</h2>
+                <p class="mt-0.5 text-caption text-mute">{e.foundry}</p>
+              </div>
+              <a href={e.buyUrl} target="_blank" rel="noopener noreferrer" class="shrink-0 rounded-full border border-hairline px-3 py-1 text-caption text-body transition-colors hover:border-hairline-strong hover:text-ink">
+                Buy original
+              </a>
+            </div>
+            <p class="mt-4 text-caption text-mute">Free alternatives</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {e.free.map((f) => (
+                <a
+                  href={`/fonts/${f.slug}`}
+                  data-specimen-font={f.family}
+                  class="rounded-full bg-link-soft px-3.5 py-1.5 text-body-sm text-link transition-opacity hover:opacity-80"
+                  style={`font-family:'${f.family}',sans-serif;`}
+                >
+                  {f.family}
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section class="mt-16">
+        <div class="prose-doc max-w-3xl">
+          <h2>Why free alternatives, and are they really free?</h2>
+          <p>
+            A licence for a popular commercial face can cost hundreds or thousands of dollars per desktop seat, and most
+            foundry licences also cap how many users or domains a webfont can serve. The alternatives here are Google Fonts:
+            open-source faces released under the SIL Open Font License, which lets you use them in websites, apps, print,
+            marketing and commercial products with no payment and no attribution required.
+          </p>
+          <p>
+            These are curated stand-ins matched by measured letter shapes — x-height, stroke weight, contrast and width —
+            not vague stylistic suggestions. They are not perfect clones, and they are not the originals. For brand work
+            where the exact typeface matters, buy the licence; for everything else, the free twin is usually indistinguishable
+            at reading sizes.
+          </p>
+          <h2>How the pairing is measured</h2>
+          <p>
+            Each free alternative is ranked against the commercial face using the same four metrics the
+            <a href="/#identify" class="text-link"> font finder</a> uses: relative x-height, stem weight, stroke contrast and
+            average letter width, normalised so a close score means a close silhouette. Fonts that are commonly paired with
+            the target (like Montserrat for Gotham or Inter for Helvetica) are preferred when their measurements agree.
+          </p>
+          <h2>Not sure which paid font you're looking at?</h2>
+          <p>
+            Upload the image to the <a href="/#identify" class="text-link">font finder</a>. It will match the letterforms
+            against the free library and, when the shape resembles a commercial face in this directory, surface the free
+            stand-in directly in the results. You can also browse the full
+            <a href="/fonts" class="text-link"> free font library</a> by category to start from the design direction you want.
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { initSpecimenFonts } from "../../scripts/specimen-fonts";
+  import { onPageLoad } from "../../scripts/onload";
+
+  onPageLoad(() => {
+    const search = document.getElementById("alt-search") as HTMLInputElement | null;
+    const count = document.getElementById("alt-count");
+    const cards = [...document.querySelectorAll<HTMLElement>("[data-alt-card]")];
+
+    function applyFilter(): void {
+      const q = (search?.value ?? "").trim().toLowerCase();
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = !q || (card.dataset.name ?? "").includes(q);
+        card.classList.toggle("hidden", !show);
+        if (show) visible++;
+      });
+      if (count) count.textContent = `${visible} of ${cards.length} alternatives`;
+      refreshFonts();
+    }
+
+    const refreshFonts = initSpecimenFonts(document);
+    search?.addEventListener("input", applyFilter);
+    applyFilter();
+  });
+</script>
