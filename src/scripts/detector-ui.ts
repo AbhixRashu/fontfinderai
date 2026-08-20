@@ -1044,19 +1044,155 @@ export function initDetector(root: HTMLElement): void {
     });
   });
 
-  // ---- upload controls -----------------------------------------------------
+  // ---- upload & camera controls -------------------------------------------
   const fileInput = q<HTMLInputElement>(root, "[data-file-input]")!;
   const loadButton = q<HTMLButtonElement>(root, "[data-load-file]")!;
   const cameraBtn = q<HTMLButtonElement>(root, "[data-camera]");
   const cameraInput = q<HTMLInputElement>(root, "[data-camera-input]");
+  const cameraModal = q<HTMLElement>(root, "[data-camera-modal]");
+  const cameraCloseBtn = q<HTMLButtonElement>(root, "[data-camera-close]");
+  const cameraVideo = q<HTMLVideoElement>(root, "[data-camera-video]");
+  const cameraCanvas = q<HTMLCanvasElement>(root, "[data-camera-canvas]");
+  const cameraSnapBtn = q<HTMLButtonElement>(root, "[data-camera-snap]");
+  const cameraSwitchBtn = q<HTMLButtonElement>(root, "[data-camera-switch]");
+  const cameraLoading = q<HTMLElement>(root, "[data-camera-loading]");
+  const cameraError = q<HTMLElement>(root, "[data-camera-error]");
+  const cameraErrorText = q<HTMLElement>(root, "[data-camera-error-text]");
+  const cameraFallbackFileBtn = q<HTMLButtonElement>(root, "[data-camera-fallback-file]");
+
   const urlForm = q<HTMLFormElement>(root, "[data-url-form]");
   const urlInput = q<HTMLInputElement>(root, "[data-url-input]");
+  const urlSubmitBtn = q<HTMLButtonElement>(root, "[data-url-submit]");
+  const urlSubmitText = q<HTMLElement>(root, "[data-url-submit-text]");
+  const urlSpinner = q<HTMLElement>(root, "[data-url-spinner]");
+
   const dropZone = q(root, "[data-upload-drop]")!;
   const trySample = q<HTMLButtonElement>(root, "[data-try-sample]")!;
   const resetBtn = q<HTMLButtonElement>(root, "[data-reset]");
 
+  // ---- Camera viewfinder logic ---------------------------------------------
+  let activeStream: MediaStream | null = null;
+  let currentFacingMode: "environment" | "user" = "environment";
+
+  function stopCamera(): void {
+    if (activeStream) {
+      activeStream.getTracks().forEach((track) => track.stop());
+      activeStream = null;
+    }
+    if (cameraVideo) {
+      cameraVideo.srcObject = null;
+    }
+    cameraModal?.classList.add("hidden");
+  }
+
+  async function startCamera(): Promise<void> {
+    // If browser doesn't support getUserMedia or is not in a secure context, fallback to file capture input
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraInput?.click();
+      return;
+    }
+
+    cameraModal?.classList.remove("hidden");
+    cameraLoading?.classList.remove("hidden");
+    cameraError?.classList.add("hidden");
+
+    if (activeStream) {
+      activeStream.getTracks().forEach((track) => track.stop());
+      activeStream = null;
+    }
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: currentFacingMode },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      };
+
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch {
+        // Fallback with relaxed video constraints
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+
+      activeStream = stream;
+      if (cameraVideo) {
+        cameraVideo.srcObject = stream;
+        await cameraVideo.play().catch(() => {});
+      }
+      cameraLoading?.classList.add("hidden");
+    } catch (err: unknown) {
+      cameraLoading?.classList.add("hidden");
+      cameraError?.classList.remove("hidden");
+      const errName = err instanceof Error ? err.name : "";
+      if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
+        if (cameraErrorText) {
+          cameraErrorText.textContent =
+            "Camera permission was denied. Please allow camera access in your browser settings.";
+        }
+      } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError") {
+        if (cameraErrorText) {
+          cameraErrorText.textContent = "No camera device found on this system.";
+        }
+      } else {
+        if (cameraErrorText) {
+          cameraErrorText.textContent = "Unable to start camera. Please upload an image file instead.";
+        }
+      }
+    }
+  }
+
+  function snapPhoto(): void {
+    if (!cameraVideo || !activeStream) return;
+    const videoWidth = cameraVideo.videoWidth || 640;
+    const videoHeight = cameraVideo.videoHeight || 480;
+
+    const canvas = cameraCanvas || document.createElement("canvas");
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(cameraVideo, 0, 0, videoWidth, videoHeight);
+
+    canvas.toBlob(
+      (blob) => {
+        stopCamera();
+        if (blob) {
+          const file = new File([blob], "camera-capture.png", { type: "image/png" });
+          void loadFile(file);
+        }
+      },
+      "image/png",
+      0.95
+    );
+  }
+
   loadButton.addEventListener("click", () => fileInput.click());
-  cameraBtn?.addEventListener("click", () => cameraInput?.click());
+  cameraBtn?.addEventListener("click", () => void startCamera());
+  cameraCloseBtn?.addEventListener("click", () => stopCamera());
+  cameraSnapBtn?.addEventListener("click", () => snapPhoto());
+  cameraSwitchBtn?.addEventListener("click", () => {
+    currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+    void startCamera();
+  });
+  cameraFallbackFileBtn?.addEventListener("click", () => {
+    stopCamera();
+    cameraInput?.click();
+  });
+  cameraModal?.addEventListener("click", (e) => {
+    if (e.target === cameraModal) stopCamera();
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && cameraModal && !cameraModal.classList.contains("hidden")) {
+      stopCamera();
+    }
+  });
+
   cameraInput?.addEventListener("change", () => {
     const file = cameraInput.files?.[0];
     if (file) void loadFile(file);
@@ -1067,30 +1203,137 @@ export function initDetector(root: HTMLElement): void {
     if (file) void loadFile(file);
     fileInput.value = "";
   });
+
+  // ---- URL Image Loader with CORS & Proxy Fallback -------------------------
+  async function validateImageBlob(blob: Blob): Promise<boolean> {
+    if (typeof createImageBitmap === "function") {
+      try {
+        const bmp = await createImageBitmap(blob);
+        const valid = bmp.width > 0 && bmp.height > 0;
+        bmp.close();
+        return valid;
+      } catch {
+        // Fallback to Image element below
+      }
+    }
+    return new Promise((resolve) => {
+      const testUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(testUrl);
+        resolve(true);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(testUrl);
+        resolve(false);
+      };
+      img.src = testUrl;
+    });
+  }
+
+  async function fetchImageBlobFromUrl(inputUrl: string): Promise<Blob> {
+    const url = inputUrl.trim();
+    if (!url) throw new Error("Please enter a valid image URL.");
+
+    // Handle data: URIs directly without any network fetch
+    if (url.startsWith("data:")) {
+      const commaIdx = url.indexOf(",");
+      if (commaIdx === -1) throw new Error("Invalid data URL format.");
+      const mimeMatch = url.substring(0, commaIdx).match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : "image/png";
+      const base64Data = url.substring(commaIdx + 1);
+      const binaryStr = atob(base64Data);
+      const len = binaryStr.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      return new Blob([bytes], { type: mime });
+    }
+
+    // Handle blob: URIs
+    if (url.startsWith("blob:")) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Could not load blob image.");
+      return await res.blob();
+    }
+
+    // Normal web URL
+    let targetUrl = url;
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      targetUrl = `https://${targetUrl}`;
+    }
+
+    const urlWithoutProtocol = targetUrl.replace(/^https?:\/\//i, "");
+    const candidateUrls: string[] = [
+      targetUrl,
+      `https://images.weserv.nl/?url=${encodeURIComponent(urlWithoutProtocol)}&default=1`,
+      `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+    ];
+
+    let lastError: Error | null = null;
+    for (const candidate of candidateUrls) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const res = await fetch(candidate, {
+          signal: controller.signal,
+          headers: candidate === targetUrl ? { Accept: "image/*" } : undefined,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) continue;
+        const blob = await res.blob();
+        if (blob && blob.size > 50) {
+          const isValid = await validateImageBlob(blob);
+          if (isValid) {
+            return blob;
+          }
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
+    }
+
+    throw (
+      lastError ||
+      new Error(
+        "Could not load an image from that URL. The website might require login or block hotlinking. Try downloading the image and uploading it."
+      )
+    );
+  }
+
   urlForm?.addEventListener("submit", (e) => {
     e.preventDefault();
-    const url = (urlInput?.value ?? "").trim();
-    if (!url) return;
+    const rawUrl = (urlInput?.value ?? "").trim();
+    if (!rawUrl) return;
+
     void (async () => {
       setError(null);
+      if (urlSubmitBtn) urlSubmitBtn.disabled = true;
+      if (urlSubmitText) urlSubmitText.textContent = "Loading…";
+      urlSpinner?.classList.remove("hidden");
+
       try {
-        const res = await fetch(url, { mode: "cors" });
-        if (!res.ok) throw new Error(`the server responded ${res.status}`);
-        const blob = await res.blob();
-        if (!blob.type.startsWith("image/")) {
-          const probe = await createImageBitmap(blob).catch(() => null);
-          if (!probe) throw new Error("that URL did not return an image");
-          probe.close();
-        }
-        const file = new File([blob], "remote-image", { type: blob.type || "image/png" });
+        const blob = await fetchImageBlobFromUrl(rawUrl);
+        const file = new File([blob], "remote-image.png", { type: blob.type || "image/png" });
+        if (urlInput) urlInput.value = "";
         await loadFile(file);
-      } catch {
+      } catch (err: unknown) {
         setError(
-          "That URL blocked cross-origin access or isn't an image. Download the image and upload it instead."
+          err instanceof Error
+            ? err.message
+            : "Could not fetch or decode the image from that URL. Try downloading and uploading it."
         );
+      } finally {
+        if (urlSubmitBtn) urlSubmitBtn.disabled = false;
+        if (urlSubmitText) urlSubmitText.textContent = "Load URL";
+        urlSpinner?.classList.add("hidden");
       }
     })();
   });
+
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.classList.add("drag-over");
@@ -1120,6 +1363,7 @@ export function initDetector(root: HTMLElement): void {
   });
 
   const resetAll = () => {
+    stopCamera();
     if (objectUrl && objectUrl.startsWith("blob:")) URL.revokeObjectURL(objectUrl);
     objectUrl = "";
     hasImage = false;
